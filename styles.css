@@ -1,4 +1,5 @@
-﻿@font-face {
+﻿/* === ИМПОРТ ШРИФТОВ === */
+@font-face {
     font-family: 'Disket Mono';
     src: url('Fonts/Disket-Mono-Regular.ttf') format('truetype');
 }
@@ -13,73 +14,65 @@
     src: url('Fonts/Plexiglass.ttf') format('truetype');
 }
 
+/* === ГЛОБАЛЬНЫЕ СТИЛИ === */
 * {
-    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
 }
 
-/* Стили для области с прокруткой */
 html {
-    overflow-y: scroll; /* Всегда показывает вертикальную полосу прокрутки */
+    overflow-y: scroll;
 }
 
-/* Общие стили */
 body {
-    overflow-y: auto; /* Позволяет прокручивать содержимое */
-    font-family: 'Roboto', sans-serif; 
-    color: white;
-    background-image: url('image/background/GameGuildBackground(3).png');
+    background-image: url('image/background/GameGuildBackground(3).png'); /* Вернули фон */
     background-size: cover;
     background-repeat: no-repeat;
     background-attachment: fixed;
-    margin: 0;
+    color: white;
+    min-height: 100vh;
+    padding-top: 80px; /* Отступ сверху для фиксированного хедера */
+    overflow-y: auto;
 }
 
-
+/* === ШАПКА === */
 header {
-    position: fixed; /* Фиксированное позиционирование */
-    top: 0; /* Заставляет заголовок прилипать к верхней части экрана */
-    left: 0; /* Обеспечиваем, что заголовок будет слева */
-    right: 0; /* Обеспечиваем, что заголовок будет вправо */
-    z-index: 1000; /* Слой выше других элементов */
-    background-color: rgb(215, 181, 24); /* Фон заголовка */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 10px 20px;
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    padding: 20px;
+    align-items: center;
+    height: 80px;
 }
 
-    header h1 {
-        margin: 0;
-        font-size: 1.5em;
-        color: white;
-        font-family: 'Disket Mono', monospace;
-        line-height: 1.2;
-        text-align: left; /* Выравнивание текста по левому краю */
-        padding-left: 20px; /* Отступ слева для заголовка */
-    }
-
-
-/* При необходимости добавьте стиль для текста, который будет под заголовком */
-.header-text {
-    color: white; /* Белый цвет для текста под заголовком */
-    font-size: 1.2em; /* Размер шрифта для текста под заголовком */
-    font-family: 'Roboto', sans-serif; /* Шрифт для текста под заголовком */
-    margin-top: 5px; /* Отступ сверху для текстового элемента */
+header h1 {
+    font-size: 2em;
+    color: white;
+    font-family: 'Disket Mono', monospace;
+    margin: 0;
+    flex-shrink: 0;
 }
 
 .letter-g {
-    color: black; /* Цвет буквы "G" */
-    font-size: 1.5em; /* Увеличенный размер шрифта для букв G */
+    color: #FFD700;
+    font-size: 1.5em;
+    font-family: 'Disket Mono', monospace;
 }
 
 nav {
-    display: flex; /* Flex-контейнер для навигации */
-    align-items: center; /* Центрируем кнопки навигации по вертикали */
-    justify-content: center; /* Центрируем кнопки навигации по горизонтали */
-    flex-grow: 1; /* Даем возможность nav занять всю оставшуюся ширину */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    margin: 0 20px;
 }
-
 
 .main-nav {
     display: flex;
@@ -87,469 +80,467 @@ nav {
     justify-content: center;
 }
 
-    .main-nav a {
-        margin: 0 10px;
-        color: #fff;
-        text-decoration: none;
-    }
+.main-nav a {
+    margin: 0 15px;
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    white-space: nowrap;
+}
+
+.main-nav a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
 
 .auth-nav {
     display: flex;
-    align-items: center; /* Центрируем ячейку с аватаром и кнопками */
-}
-
-    .auth-nav a, .auth-nav button {
-        margin-left: 10px;
-        color: #fff;
-        background-color: rgb(22, 27, 29);
-        border: none;
-        padding: 10px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        font-family: 'Nothing';
-    } 
-
-        .auth-nav a:hover, .auth-nav button:hover {
-            background-color: #444;
-        }
-
-nav a {
-    margin: 0 15px; /* Отступы между кнопками */
-    color: #fff; /* Цвет текста кнопок */
-    text-decoration: none;
-    font-family: 'Nothing';
-    padding: 10px 15px; /* Отступы для кнопок */
-    background-color: rgb(22, 27, 29); /* Цвет фона кнопок */
-    border-radius: 5px; /* Закругленные углы для кнопок */
-    transition: background-color 0.3s; /* Плавный переход цвета фона */
-    cursor: pointer;
-}
-
-
-    nav a:hover {
-        background-color: #444; /* Цвет фона кнопок при наведении */
-    }
-
-.container {
-    padding: 20px;
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.8); /* Черный цвет с 80% непрозрачностью (20% прозрачности) */
-    width: 80%;
-    max-width: 1200px;
-    margin: 20px auto; /* Убедитесь, что это сохраняет центральное выравнивание */
-    border-radius: 10px;
-    margin-top: 300px; /* Вы можете увеличить значение для расстояния ниже заголовка */
-    min-height: 50px;
-    padding-top: 70px; /* Это обеспечит отступ выше контейнера, чтобы он не перекрывался заголовком */
-}
-/* Стили для анимации перехода */
-.container {
-    opacity: 0; /* Начальное состояние: скрыто */
-    transform: translateY(20px); /* Немного смещаем вниз */
-    transition: opacity 0.5s ease, transform 0.5s ease; /* Параметры анимации */
-    display: none; /* Изначально скрываем все контейнеры */
-}
-
-    .container.visible {
-        opacity: 1; /* Полная видимость */
-        transform: translateY(0); /* Возвращаем в исходное положение */
-        display: block; /* Ставим блок в видимую область */
-    }
-
-    .dynamic-article-section {
-    margin-bottom: 15px;
-}
-
-.article-title {
-    font-size: 1.5em; /* Размер шрифта для заголовка */
-    color: #333; /* Цвет заголовка */
-    margin: 0 0 10px; /* Отступы */
-    color: white;
-}
-
-.article-content {
-    font-size: 1em; /* Размер шрифта для содержания */
-    color: #666; /* Цвет текста */
-    margin: 0 0 10px; /* Отступы */
-}
-
-.article-image-container {
-    margin-right: 10px;
-}
-
-.article-preview {
-    display: flex;
     align-items: center;
-    background-color: rgb(0, 0, 0);
-    border: 1px solid #444;
-    border-radius: 10px;
-    padding: 10px;
-    box-shadow: 0 2px 5px rgba(215, 181, 24);
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.3s;
-    width: 90%;
-    max-width: 600px;
-    margin: 10px 0;
-    position: relative;
-}
-
-.article-title {
-    font-size: 1.2em;
-    margin: 0;
-}
-.article-content {
-    flex-grow: 1;
-}
-.article-image {
-    width: 120px;
-    height: 80px;
-    border-radius: 5px;
-}
-
-.article-image-container {
-    margin-right: 10px;
-}
-    .article-preview:hover {
-        transform: scale(1.03);
-        box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
-    }
-
-    .article-preview img {
-    width: 120px;
-    height: 80px;
-    border-radius: 5px;
-    margin-right: 10px;
-    }
-
-    .article-preview .article-title {
-        font-size: 1.2em;
-        margin: 0;
-    }
-
-        .article-preview .article-title:hover {
-            color: #FFD700;
-        }
-
-    .article-preview .article-content {
-        display: flex;
-        flex-direction: column;
-    }
-
-.add-feedback-button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 3px;
-    cursor: pointer;
-}
-
-    .add-feedback-button:hover {
-        background-color: #0056b3;
-    }
-
-.comment-form {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    padding: 10px;
-    box-sizing: border-box;
-}
-
-.recent-articles-slider {
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    position: relative;
-    width: 100%;
-    max-width: 2000px;
-    margin: 20px auto;
-}
-
-.recent-articles-slider-content {
-    display: flex;
-    transition: transform 0.5s ease;
-}
-
-.recent-article-block {
-    width: calc(100% / 3 - 20px);
-    margin: 0 10px;
     flex-shrink: 0;
-    background-color: rgba(25, 25, 25, 0.7); /* Полупрозрачный фон для статей */
-    border-radius: 10px; /* Закругление углов */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Добавление тени */
-    overflow: hidden; /* Элемент, который обрезает выходящие за пределы содержимое */
-    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Плавный переход для трансформации и тени */
 }
 
-    .recent-article-block:hover {
-        transform: scale(1.05); /* Увеличение элемента при наведении */
-        box-shadow: 0 0 15px rgba(255, 255, 255, 0.8); /* Изменение тени на белый цвет при наведении */
-    }
-
-.article-image-container {
-    overflow: hidden; /* Обрезаем содержимое, выходящее за пределы контейнера */
-    position: relative; /* Позволяет позиционировать дочерние элементы */
-}
-
-.recent-article-block img {
-    width: 100%;
-    height: auto;
+.auth-nav a, .auth-nav button {
+    margin-left: 10px;
+    color: white;
+    text-decoration: none;
+    padding: 8px 12px;
     border-radius: 5px;
-    transition: transform 0.3s ease; /* Плавный переход */
-}
-
-.article-image {
-    width: 100%; /* Автоматическая ширина, чтобы вписаться в блок */
-    height: auto; /* Автоматическая высота, чтобы сохранить пропорции */
-    display: block; /* Блоковый элемент для корректного отображения */
-    border-radius: 8px; /* Углы картины могут быть закруглены */
-}
-
-.article-slide {
-    cursor: pointer; /* Указатель курсора для интерактивного элемента */
-    text-align: center; /* Центрируем текст */
-}
-
-.article-block {
-    display: flex; /* Позволяет размещать элементы внутри блока статей */
-    align-items: center;
-    background-color: rgb(0, 0, 0);
-    border: 1px solid #444;
-    border-radius: 10px;
-    padding: 10px;
-    box-shadow: 0 2px 5px rgba(215, 181, 24);
+    border: none;
+    background-color: transparent;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.3s; /* Добавление перехода для тени */
-    width: 90%; /* Установка ширины блока статьи */
-    max-width: 600px; /* Максимальная ширина блока статьи */
-    margin: 10px 0; /* Вертикальные отступы между блоками статей */
+    transition: background-color 0.3s;
+    white-space: nowrap;
 }
 
-    .article-block:hover {
-        transform: scale(1.03); /* Увеличение элемента при наведении */
-        box-shadow: 0 0 15px rgba(255, 255, 255, 0.8); /* Изменение тени на белый цвет при наведении */
-    }
-
-.article-time {
-    font-size: 0.8em; /* Меньший размер шрифта для даты */
-    color: #ccc; /* Цвет текста даты остается светлым */
-    margin-top: 5px; /* Отступ сверху */
-    text-align: center; /* Центрируем дату статьи */
+.auth-nav a:hover, .auth-nav button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-.recent-article-title {
-    position: relative; /* Убедитесь, что позиционирование относительное для заголовка */
-    font-weight: bold; /* Увеличение жирности шрифта */
-    color: white; /* Начальный цвет текста */
-    background-color: rgba(0, 0, 0, 0.7); /* Фон для заголовка */
-    padding: 10px; /* Отступы для заголовка */
-    transition: color 0.3s; /* Плавный переход цвета при наведении */
-}
-    .recent-article-title:hover {
-        color: #FFD700; /* Цвет заголовка меняем на желтый при наведении */
-    }
-
-.recent-article-category {
-    font-size: 0.8em; /* Уменьшенный размер категории */
-    color: #555; /* Цвет категории оставляем светлым для удобства */
+#auth-button {
+    background-color: #333;
+    border: 1px solid #555;
 }
 
-.slide-image {
-    max-width: 100%; /* Ограничиваем ширину изображения */
-    border-radius: 10px; /* Скругление углов для изображений в слайдере */
+.main-nav a,
+.auth-nav a,
+.auth-nav button {
+    font-family: 'Nothing'; /* Используем шрифт Nothing */
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    cursor: pointer;
 }
 
-.slider-button {
-    background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон */
-    color: white; /* Цвет текста */
-    border: none; /* Без рамки */
-    padding: 10px; /* Отступы */
-    cursor: pointer; /* Курсор указателя */
-    position: absolute; /* Абсолютное позиционирование */
-    top: 50%; /* Центрируем по вертикали */
-    transform: translateY(-50%); /* Центрирование */
-    z-index: 1000; /* Выровнять по слою выше слайдера */
-    border-radius: 5px; /* Закругление кнопок */
-    transition: background-color 0.3s; /* Плавный переход фона */
+.main-nav a:hover,
+.auth-nav a:hover,
+.auth-nav button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-    .slider-button:first-of-type {
-        left: 10px; /* Левый отступ для первой кнопки */
-    }
-
-    .slider-button:last-of-type {
-        right: 10px; /* Правый отступ для второй кнопки */
-    }
-
-    .slider-button:hover {
-        background-color: rgba(0, 0, 0, 0.8); /* Увеличьте непрозрачность при наведении */
-    }
-
-.articles-grid {
-    display: flex; /* Используем flex для выстраивания в строку */
-    flex-direction: column; /* Вертикальное направление для блока статей */
-    align-items: flex-start; /* Выравниваем блоки статьи слева */
-    margin-left: 20px; /* Отступ слева от контейнера */
+.profile-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    /* border: 2px solid #FFD700;  */
+    transition: box-shadow 0.3s ease, border-color 0.3s ease; /* Анимация для рамки и тени */
+    border: 3px solid transparent; /* Невидимая рамка по умолчанию */
 }
 
-.article-block:hover {
-    transform: scale(1.02);
+/* При наведении на аватар */
+.profile-avatar:hover {
+    border-color: #FFD700;
+    /* Или, если используете box-shadow:
+    box-shadow: 0 0 0 2px #FFD700;
+    */
 }
 
-.article-block img {
-    width: 120px; /* Ширина изображения */
-    height: 80px; /* Высота изображения */
-    border-radius: 5px; /* Скругление углов изображения */
-    margin-right: 10px; /* Отступ справа от изображения */
+.profile-menu {
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background-color: #333;
+    border: 1px solid #555;
+    border-radius: 5px;
+    padding: 10px;
+    z-index: 1001;
 }
 
-.article-title {
-    font-size: 1.2em;
-    margin: 0;
-}
-    .article-title:hover {
-    color: #FFD700; /* Цвет заголовка меняем на желтый при наведении */
-    }
-
-.article-content {
-    display: flex; /* Внутреннее выравнивание */
-    flex-direction: column; /* Стековой порядок картинка-содержимое */
+.profile-menu.hidden {
+    display: none;
 }
 
-#full-article {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-#full-article-title {
-    font-size: 2em; /* Настройте размер шрифта по вашему усмотрению */
-    line-height: 1.2; /* Высота строки для лучшей читаемости */
-    word-wrap: break-word; /* Позволяет переносить длинные слова */
-    overflow-wrap: break-word; /* Современный аналог word-wrap */
-    hyphens: auto; /* Автоматически добавляет переходы на указателях, если это возможно */
-    margin: 0; /* Убираем внешние отступы, если необходимо */
-    text-align: left; /* Выравнивание по центру, при желании */
-    color: ghostwhite;
-}
-
-#full-article-content {
-    max-width: 800px;
-    text-align: justify;
+.profile-menu a {
+    display: block;
     color: white;
-    margin: 0 auto;
-    font-size: 18px;
+    text-decoration: none;
+    padding: 5px 0;
+    margin: 5px 0;
 }
 
-    #full-article-content a {
-        color: yellow; /* Красный цвет текста для ссылок */
-        text-decoration: none; /* Убираем подчеркивание из ссылок */
-    }
-
-footer {
-    text-align: center;
-    padding: 20px;
-    background: #333;
-    color: white; /* Цвет текста в подвале белым */
-}
-main-article-title
-#editor-container {
-    width: 100%;
-    max-width: 800px;
+/* === КОНТЕЙНЕРЫ СЕКЦИЙ === */
+.container {
+    max-width: 1200px;
     margin: 20px auto;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+    min-height: 500px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    display: none;
 }
 
-.ql-editor {
-    min-height: 400px;
-    color: white;
+.container.visible {
+    opacity: 1;
+    transform: translateY(0);
+    display: block;
 }
 
+/* === ГЛАВНАЯ СЕКЦИЯ === */
+#home {
+    padding: 0;
+    background-color: transparent;
+}
+
+/* --- Основная статья --- */
 .main-article {
-    text-align: center; /* Центрируем содержимое */
-    margin: 40px auto; /* Добавляем отступы для пространства */
-    width: 100%; /* Ширина на 100% */
-    max-width: 1280px; /* Ограничиваем максимальную ширину */
-    position: relative; /* Позволяет позиционировать текст */
-}
-
-.main-article-title {
-    position: absolute; /* Позволяет позиционировать заголовок поверх изображения */
-    bottom: 10%; /* Отступ снизу */
-    left: 20px; /* Выровнять по левому краю */
-    right: 0; /* Выровнять по правому краю */
-    color: white; /* Цвет текста заголовка белый */
-    text-align: left; /* Центрируем текст */
-    font-size: 2em; /* Увеличенный размер шрифта для заголовка */
-    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7); /* Тень для текста */
-    hyphens: auto; /* Автоматически добавляет переноса на указателях, если это возможно */
-    overflow-wrap: break-word; /* Современный аналог word-wrap */
+    margin-bottom: 30px;
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    cursor: pointer; /* Сделать кликабельной */
 }
 
 .main-article-image-container {
-    position: relative; /* Позиционирование для заголовка */
-    width: 100% auto; /* Ширина контейнера изображения 100% */
-    overflow: hidden; /* Обрезаем содержимое, выходящее за пределы контейнера */
-    margin: -109px auto;
+    position: relative;
+    width: 100%;
 }
-
-    .main-article-image-container img {
-        transition: transform 0.3s ease; /* Плавный переход */
-    }
-
-        .main-article-image-container img:hover {
-            transform: scale(1.05); /* Увеличиваем изображение на 5% */
-        }
 
 .main-article-image {
-    width: 1200px; /* Ширина изображения */
-    height: 424px; /* Высота изображения */
-    object-fit: cover; /* Обрезка изображения для правильного отображения */
-    border-radius: 15px; /* Скругление углов изображения (по желанию) */
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s ease;
 }
 
-.main-article-content {
-    font-size: 16px; /* Размер шрифта текста статьи */
-    margin-top: 10px; /* Отступ сверху перед текстом */
-    color: white; /* Цвет текста статьи белый */
+.main-article-image:hover {
+    transform: scale(1.02);
 }
 
-.main-article-text {
-    position: absolute; /* Позволяет позиционировать текст поверх изображения */
-    bottom: 10%; /* Отступ снизу для текста */
-    left: 0; /* Выровнять по левому краю */
-    right: 0; /* Выровнять по правому краю */
-    color: white; /* Цвет текста белый */
-    text-align: center; /* Центрируем текст */
-    font-size: 2em; /* Увеличенный размер шрифта для заголовка */
-    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7); /* Тень для текста */
-    background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон для текста */
-    padding: 10px; /* Отступы вокруг текста */
-    border-radius: 10px; /* Закругление углов фона текста */
+.main-article-title {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    color: white;
+    font-size: 2em;
+    font-weight: bold;
+    text-align: left;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 15px;
+    border-radius: 10px;
+    margin: 0;
+    line-height: 1.2;
+    hyphens: auto;
+    overflow-wrap: break-word;
 }
 
-/* Стили для форм */
+/* --- Слайдер недавних статей --- */
+.recent-articles-slider-content {
+    display: flex;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 10px 0 30px 0;
+    margin-bottom: 30px;
+    scrollbar-width: none;
+    cursor: pointer; /* Сделать кликабельным */
+}
+
+.recent-articles-slider-content::-webkit-scrollbar {
+    display: none;
+}
+
+.recent-article-block {
+    flex: 0 0 calc(33.333% - 15px);
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(25, 25, 25, 0.9);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer; /* Сделать кликабельной */
+    min-width: 300px;
+}
+
+.recent-article-block:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+}
+
+.recent-article-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+.recent-article-block:hover .recent-article-image {
+    transform: scale(1.05);
+}
+
+.recent-article-details {
+    padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.recent-article-title {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin: 0 0 10px 0;
+    color: white;
+    flex-grow: 1;
+}
+
+/* --- Двухколоночный контент --- */
+.content-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.left-column, .right-column {
+    background-color: rgba(20, 20, 20, 0.7);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.left-column h3, .right-column h3 {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    color: #FFD700;
+    border-bottom: 2px solid #FFD700;
+    padding-bottom: 10px;
+}
+
+/* --- Карточки материалов и релизов --- */
+.material-card, .release-card {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    background-color: rgba(30, 30, 30, 0.8);
+    border-radius: 8px;
+    margin-bottom: 15px;
+    transition: transform 0.2s, background-color 0.2s;
+    cursor: pointer; /* Сделать кликабельной */
+}
+
+.material-card:hover, .release-card:hover {
+    background-color: rgba(50, 50, 50, 0.9);
+    transform: translateX(5px);
+}
+
+.material-image, .release-image {
+    width: 120px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+    flex-shrink: 0;
+}
+
+.material-details, .release-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.material-details h4, .release-details h4 {
+    font-size: 1em;
+    margin: 0 0 8px 0;
+    color: white;
+}
+
+.material-details p, .release-details p {
+    font-size: 0.9em;
+    color: #ccc;
+    margin: 0 0 8px 0;
+    flex-grow: 1;
+}
+
+/* Удалены подписи под статьями в колонках */
+/* .material-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8em;
+    color: #999;
+} */
+
+/* === ОБЩИЕ СТИЛИ СТАТЕЙ === */
+.articles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.article-block {
+    background-color: rgba(25, 25, 25, 0.9);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer; /* Сделать кликабельной */
+}
+
+.article-block:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+}
+
+.article-block img {
+    width: 100%;
+    height: auto;
+    max-height: 150px;
+    object-fit: cover;
+}
+
+.article-block:hover img {
+    transform: scale(1.05);
+}
+
+.article-block .article-title {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin: 15px;
+    color: white;
+    text-align: left;
+}
+
+/* Удалены подписи под статьями */
+/* .internal-news-block .article-title {
+    font-size: 1em;
+}
+
+.internal-news-block small {
+    display: block;
+    margin: 0 15px 15px 15px;
+    color: #aaa;
+    font-size: 0.85em;
+} */
+
+/* === ПОЛНАЯ СТАТЬЯ === */
+#full-article {
+    text-align: left;
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 30px;
+}
+
+#full-article-title {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    color: #FFD700;
+    line-height: 1.2;
+    hyphens: auto;
+    overflow-wrap: break-word;
+}
+
+#full-article-content {
+    font-size: 1.1em;
+    line-height: 1.6;
+    color: #eee;
+}
+
+#full-article-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+#full-article-content a {
+    color: #FFD700;
+    text-decoration: underline;
+}
+
+#full-article button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#full-article button:hover {
+    background-color: #555;
+}
+
+/* === АДМИНКА === */
 .admin-form {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 20px;
+    gap: 15px;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
-/* Стили для выбора файла */
+.form-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+select {
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #fff;
+    border-radius: 5px;
+    background-color: rgba(55, 62, 64, 0.8);
+    color: #fff;
+    width: 100%;
+}
+
+select {
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%23fff" d="M10.3,3.3L6,7.6L1.7,3.3L0,5l6,6l6-6L10.3,3.3z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+}
+
 .file-upload {
     position: relative;
     display: inline-block;
+    width: 100%;
 }
 
-    .file-upload input[type="file"] {
-        opacity: 0;
-        position: absolute;
-        z-index: -1;
-    }
+.file-upload input[type="file"] {
+    opacity: 0;
+    position: absolute;
+    z-index: -1;
+}
 
 .file-button {
     display: inline-block;
@@ -560,247 +551,452 @@ main-article-title
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
-    width: 100%; /* Чтобы кнопка заполняла ширину контейнера */
-    text-align: center; /* Центрируем текст */
+    width: 100%;
+    text-align: center;
 }
 
-    .file-button:hover {
-        background-color: #444;
-    }
+.file-button:hover {
+    background-color: #444;
+}
 
-/* Стили для выбора категории и главной статьи */
-select {
+#editor-container {
     width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border: 1px solid #fff;
+    margin: 10px 0;
+}
+
+.ql-editor {
+    min-height: 300px;
+    background-color: #333;
+    color: #999;
     border-radius: 5px;
-    background-color: rgba(55, 62, 64, 0.8);
-    color: #fff;
-    appearance: none; /* Убираем стандартные стили */
-    background-image: url('image/icons/arrow-down.svg'); /* Иконка стрелки */
-    background-repeat: no-repeat;
-    background-position: right 10px center; /* Позиция иконки */
-    background-size: 15px; /* Размер иконки */
 }
 
-/* Стили для формы регистрации/авторизации */
-#auth-form {
+.existing-article {
+    border: 1px solid #444;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    background: #1e1e1e;
+    color: white;
+    text-align: left;
+}
+
+.existing-article h4 {
+    margin: 0 0 10px 0;
+    font-size: 1.1em;
+}
+
+.existing-article small {
+    color: #aaa;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.existing-article div {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
-form-group {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    width: 100%;
-    max-width: 400px;
-    margin: 10px auto;
+.existing-article button {
+    padding: 8px 12px;
+    font-size: 0.9em;
+    background: #333;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-input[type="text"],
-input[type="password"] {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border: 1px solid #fff;
-    border-radius: 5px;
-    background-color: rgba(55, 62, 64, 0.8);
-    color: #fff;
+.existing-article button:hover {
+    background: #555;
+}
+
+/* === ПРОФИЛЬ === */
+#profile {
+    text-align: center; /* Центрируем содержимое */
+    padding: 20px;
+    background-color: rgba(30, 30, 30, 0.8); /* Фон профиля */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    max-width: 600px; /* Ограничиваем ширину */
+    margin: 20px auto; /* Центрируем блок */
+}
+
+#profile h2 {
+    color: #FFD700; /* Золотой цвет заголовка */
+    margin-bottom: 20px;
+    font-size: 2em;
+    border-bottom: 2px solid #FFD700; /* Линия под заголовком */
+    padding-bottom: 10px;
+}
+
+#profile p {
+    margin: 15px 0; /* Отступы между строками */
+    text-align: left; /* Выравнивание текста по левому краю */
+    font-size: 1.1em;
+}
+
+#profile strong {
+    color: #FFD700; /* Золотой цвет для меток */
+}
+
+#profile .form-group {
+    margin: 20px 0; /* Отступы вокруг группы формы */
+    text-align: left; /* Выравнивание текста по левому краю */
+}
+
+#profile label {
+    display: block; /* Блочный элемент для метки */
+    margin-bottom: 5px; /* Отступ снизу */
+    color: #ccc; /* Цвет текста метки */
+    font-weight: bold; /* Жирный шрифт */
+}
+
+#profile input[type="email"] {
+    width: 100%; /* Ширина 100% */
+    padding: 10px; /* Внутренние отступы */
+    border: 1px solid #555; /* Рамка */
+    border-radius: 5px; /* Скругление углов */
+    background-color: rgba(55, 62, 64, 0.8); /* Фон */
+    color: #fff; /* Цвет текста */
+    font-size: 1em; /* Размер шрифта */
+    box-sizing: border-box; /* Учитываем padding и border в ширине */
+}
+
+#profile input[type="email"]:focus {
+    outline: none; /* Убираем стандартный outline */
+    border-color: #FFD700; /* Золотая рамка при фокусе */
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); /* Тень при фокусе */
+}
+
+#profile-avatar-preview {
+    border-radius: 50%; /* Круглая форма */
+    width: 150px; /* Ширина аватара */
+    height: 150px; /* Высота аватара */
+    object-fit: cover; /* Обрезка изображения */
+    margin: 10px auto; /* Центрируем аватар */
+    display: block; /* Блочный элемент */
+    border: 3px solid #FFD700; /* Золотая рамка */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Тень */
+    transition: transform 0.3s ease; /* Плавный переход */
+}
+
+#profile-avatar-preview:hover {
+    transform: scale(1.05); /* Увеличение при наведении */
 }
 
 #avatar-upload {
-    margin-top: 5px;
+    margin: 15px 0; /* Отступы */
+    padding: 8px 12px; /* Внутренние отступы */
+    background-color: #333; /* Фон кнопки */
+    color: white; /* Цвет текста */
+    border: 1px solid #555; /* Рамка */
+    border-radius: 5px; /* Скругление углов */
+    cursor: pointer; /* Курсор */
+    transition: background-color 0.3s; /* Плавный переход */
+    font-family: 'Nothing'; /* Используем шрифт Nothing */
+    font-size: 1em; /* Размер шрифта */
 }
 
-/* Стили для аватарки */
-#avatar-image {
-    width: 100px; /* или другие нужные вам размеры */
-    height: 100px; /* поддерживайте одинаковые значения ширины и высоты для круглых аватаров */
-    object-fit: cover; /* чтобы изображение заполняло контейнер, сохраняя пропорции */
-    border-radius: 50%; /* для круглых аватаров */
-    margin-top: 10px;
+#avatar-upload:hover {
+    background-color: #555; /* Цвет фона при наведении */
 }
 
-/* Кнопки для регистрации и авторизации */
-.btn {
-    background-color: rgb(22, 27, 29);
-    color: #fff;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    width: 100%; /* Заполняет всю ширину */
-    max-width: 200px; /* Максимальная ширина */
-}
-
-    .btn:hover {
-        background-color: #444;
-    }
-
-/* Сообщения */
-.admin-message {
-    margin: 10px 0;
-    color: #FFD700;
-}
-
-h2 {
-    color: #FFD700;
-}
-
-h3 {
-    color: #FFD700;
-}
-
-/* Стили для существующих статей */
-.existing-article {
-    background-color: rgba(55, 62, 64, 0.8);
-    border: 1px solid #444;
-    margin: 10px 0;
-    padding: 15px;
-    border-radius: 8px;
-    width: 80%;
-    max-width: 600px;
-    transition: background-color 0.3s;
-}
-
-    .existing-article:hover {
-        background-color: rgba(75, 82, 84, 0.9);
-    }
-
-    .existing-article h4 {
-        margin: 0;
-    }
-
-    .existing-article button {
-        margin: 5px;
-        padding: 5px 10px;
-        background-color: #FFD700;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-        .existing-article button:hover {
-            background-color: #FFC700;
-        }
-
-#recent-activities {
-    list-style-type: none; /* Убираем маркеры списка */
-    padding: 0; /* Убираем отступы */
-    color: #ccc; /* Цвет текста списка */
-}
-
-    #recent-activities li {
-        background: rgba(30, 34, 36, 0.7); /* Полупрозрачный фон для элементов списка */
-        margin: 5px 0; /* Отступы между элементами списка */
-        padding: 10px; /* Паддинг для элементов списка */
-        border-radius: 5px; /* Скругления углов элементов списка */
-    }
-
-.hidden {
-    display: none; /* Или использование display: none для скрытия */
-}
-
-.crop-area {
-    position: absolute;
-    width: 200px; /* Ширина области обрезки в круге */
-    height: 200px; /* Высота области обрезки в круге */
-    border: 2px dashed rgba(255, 255, 255, 0.7); /* Оформляем область обрезки */
-    border-radius: 50%; /* Оформляем круг */
-    pointer-events: none; /* Отключаем события у области обрезки */
-}
-
-/* Стили для контейнера обрезки */
 #crop-container {
-    display: none;
-    margin-top: 10px;
-    position: relative; /* Убедитесь, что это значение установлено */
-    width: 100%; /* Задайте ширину 100%, чтобы заполнить контейнер */
-    max-width: 400px; /* Установите максимальную ширину, если необходимо */
-    height: auto; /* Высота может быть автоматической */
+    margin-top: 20px;
+    padding: 20px;
+    background-color: rgba(40, 40, 40, 0.9); /* Фон контейнера обрезки */
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    border: 1px solid #444; /* Рамка */
 }
 
-/* Стили канваса для обрезки */
-#crop-canvas {
-    width: 100%;
-    height: 100%;
+#crop-container h3 {
+    color: #FFD700; /* Золотой цвет заголовка */
+    margin-bottom: 15px;
 }
 
-#cropped-image {
-    width: 100px; /* или другие нужные вам размеры */
-    height: 100px; /* поддерживайте одинаковые значения ширины и высоты для круглых аватаров */
-    object-fit: cover; /* чтобы изображение заполняло контейнер, сохраняя пропорции */
-    border-radius: 50%; /* для круглых аватаров */
-    margin-top: 10px;
-    display: none; /* Скрыть до обрезки */
+#crop-image {
+    max-width: 100%;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #555; /* Рамка изображения */
 }
 
 .crop-buttons {
     display: flex;
-    justify-content: center; /* Центрируем кнопки внутри контейнера */
-    margin-top: 20px; /* Отступ сверху для кнопок */
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
 }
 
-    .crop-buttons button {
-        margin: 0 10px; /* Отступ между кнопками */
-        padding: 10px 15px; /* Отступы внутри кнопок */
-        height: 40px; /* Фиксированная высота кнопок */
-        border: none; /* Убираем стандартные рамки */
-        border-radius: 5px; /* Скругляем углы */
-        background-color: rgb(22, 27, 29);
-        color: white; /* Цвет текста */
-        cursor: pointer; /* Стиль курсора при наведении */
-        transition: background-color 0.3s; /* Плавный переход цвета фона */
+.crop-buttons button {
+    padding: 10px 20px;
+    font-family: 'Nothing'; /* Используем шрифт Nothing */
+    font-size: 1em;
+    background-color: #333;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.crop-buttons button:hover {
+    background-color: #555;
+    transform: translateY(-2px); /* Небольшой подъем при наведении */
+}
+
+.crop-buttons button:active {
+    transform: translateY(0); /* Возвращение при нажатии */
+}
+
+#cropped-image {
+    border-radius: 50%;
+    display: block;
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    margin: 10px auto;
+    border: 3px solid #FFD700; /* Золотая рамка */
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.4); /* Тень */
+}
+
+/* Кнопка "Сохранить изменения" */
+#profile > button.btn, /* Если у кнопки есть класс btn */
+#profile > button:not(.crop-buttons button) { /* Или если это кнопка вне crop-buttons */
+    margin-top: 20px;
+    padding: 12px 25px;
+    font-family: 'Nothing'; /* Используем шрифт Nothing */
+    font-size: 1.1em;
+    background-color: #333;
+    color: white;
+    border: 1px solid #FFD700; /* Золотая рамка */
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+#profile > button.btn:hover,
+#profile > button:not(.crop-buttons button):hover {
+    background-color: #444;
+    transform: translateY(-3px); /* Подъем */
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4); /* Золотая тень */
+}
+
+#profile > button.btn:active,
+#profile > button:not(.crop-buttons button):active {
+    transform: translateY(-1px); /* Меньший подъем при нажатии */
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+/* === СООБЩЕСТВО === */
+.article-preview {
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(30, 30, 30, 0.8);
+    border: 1px solid #444;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.article-preview .article-title {
+    font-size: 1.2em;
+    margin: 0 0 10px 0;
+    color: #FFD700;
+}
+
+.article-preview .article-content {
+    font-size: 1em;
+    color: #ccc;
+    margin-bottom: 15px;
+}
+
+.add-feedback-button {
+    align-self: flex-start;
+    padding: 8px 15px;
+    background-color: #333;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-bottom: 15px;
+}
+
+.add-feedback-button:hover {
+    background-color: #555;
+}
+
+.feedback-list {
+    width: 100%;
+}
+
+.feedback {
+    background-color: rgba(50, 50, 50, 0.8);
+    border-left: 3px solid #FFD700;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 0 5px 5px 0;
+    font-size: 0.95em;
+}
+
+.feedback:last-child {
+    margin-bottom: 0;
+}
+
+/* === КНОПКИ === */
+.btn {
+    padding: 12px 20px;
+    background-color: rgb(22, 27, 29);
+    color: #fff;
+    border: 1px solid #ffffff;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 1em;
+    width: auto;
+}
+
+.btn:hover {
+    background-color: #444;
+}
+
+/* === ЗАГОЛОВКИ === */
+h2 {
+    color: #FFD700;
+    margin-bottom: 20px;
+    font-size: 2em;
+}
+
+h3 {
+    color: #FFD700;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+}
+
+/* === СООБЩЕНИЯ === */
+.admin-message, #auth-message {
+    margin: 15px 0;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.admin-message {
+    color: #FFD700;
+    border: 1px solid #FFD700;
+    background-color: rgba(255, 215, 0, 0.1);
+}
+
+#auth-message {
+    color: #f44336;
+    border: 1px solid #f44336;
+    background-color: rgba(244, 67, 54, 0.1);
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 992px) {
+    .content-columns {
+        grid-template-columns: 1fr;
     }
 
-        .crop-buttons button:hover {
-            background-color: #444; /* Цвет кнопок при наведении */
-        }
-
-.profile-container {
-    position: relative; /* Для позиционирования меню относительно аватарки */
+    .recent-article-block {
+        flex: 0 0 calc(50% - 15px);
+    }
 }
 
-.profile-avatar {
-    width: 40px; /* Размер аватара */
-    height: 40px; /* Размер аватара */
-    border-radius: 50%; /* Круглая форма */
-    cursor: pointer; /* Указатель курсора */
-    margin-left: 10px; /* Отступ слева от аватара */
-    border: 5px solid black; /* Черная обводка */
-    transition: border-color 0.3s ease; /* Плавный переход цвета обводки */
-}
-
-    .profile-avatar:hover {
-        border-color: #FFD700; /* Желтая обводка при наведении */
+@media (max-width: 768px) {
+    body {
+        padding-top: 70px;
     }
 
-.profile-menu {
-    position: absolute; /* Позиционирование меню */
-    top: 50px; /* Расположение ниже аватарки */
-    right: 0; /* Выровнять по правому краю */
-    background-color: rgba(22, 27, 29, 0.9); /* Фон меню */
-    border-radius: 5px; /* Закругление углов */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Тень для меню */
-    z-index: 1000; /* Поверх других элементов */
-}
-
-    .profile-menu a {
-        display: block; /* Сделать ссылки блочными */
-        padding: 10px; /* Отступы */
-        color: white; /* Цвет текста */
-        text-decoration: none; /* Убираем подчеркивание */
+    header {
+        flex-direction: column;
+        height: auto;
+        padding: 10px;
     }
 
-        .profile-menu a:hover {
-            background-color: #444; /* Фон при наведении */
-        }
+    header h1 {
+        font-size: 1.8em;
+        margin-bottom: 10px;
+    }
 
-.hidden {
-    display: none; /* Скрываем элемент */
+    nav {
+        width: 100%;
+        margin: 0;
+    }
+
+    .main-nav {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .main-nav a {
+        margin: 5px;
+        font-size: 0.9em;
+    }
+
+    .auth-nav {
+        margin-top: 10px;
+    }
+
+    .recent-article-block {
+        flex: 0 0 calc(100% - 10px);
+    }
+
+    .main-article-title {
+        font-size: 1.5em;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        padding: 10px;
+    }
+
+    #full-article-title {
+        font-size: 2em;
+    }
+
+    .articles-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 15px;
+        margin: 10px;
+    }
+
+    .main-article-title {
+        font-size: 1.2em;
+    }
+
+    .recent-article-title {
+        font-size: 1em;
+    }
+
+    .material-card, .release-card {
+        flex-direction: column;
+    }
+
+    .material-image, .release-image {
+        width: 100%;
+        height: 120px;
+    }
+
+    h2 {
+        font-size: 1.8em;
+    }
+
+    h3 {
+        font-size: 1.3em;
+    }
 }

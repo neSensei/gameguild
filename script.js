@@ -1,4 +1,5 @@
-﻿const quill = new Quill('#editor', {
+﻿// === ИНИЦИАЛИЗАЦИЯ РЕДАКТОРА QUILL ===
+const quill = new Quill('#editor', {
     modules: {
         toolbar: [
             [{ header: [1, 2, false] }],
@@ -10,652 +11,989 @@
     theme: 'snow',
 });
 
+// === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
 let users = [
-    { username: 'admin', password: '1234', role: 'admin' }
+    {
+        username: 'admin',
+        password: '1234', // В реальном приложении НИКОГДА не храните пароли в открытом виде!
+        role: 'admin',
+        email: 'admin@example.com',
+        registrationDate: '2023-01-01',
+        avatar: 'image/icons/Noimage.jpg'
+    }
 ];
-const adminUser = {
-    username: 'admin',
-    password: '1234',
-    role: 'admin',
-    email: 'admin@example.com',
-    registrationDate: '2023-01-01',
-    avatar: '', // Путь к аватарке
-};
-
-// Сохранение текущего пользователя
 let currentUser = null;
-let articles = [];
-let mainArticleIndex = localStorage.getItem('mainArticleIndex') || 0; // Индекс выбранной основной статьи
-let externalNews = []; // для хранения RSS-новостей
+let articles = []; // ✅ Объявлено
+let externalNews = []; // ✅ Объявлено
+let currentEditingIndex = null;
+let feedbacks = JSON.parse(localStorage.getItem('feedbacks')) || {};
 
-// Функция для загрузки статей
+// === УПРАВЛЕНИЕ RSS СТАТЬЯМИ ===
+let hiddenRssArticles = JSON.parse(localStorage.getItem('hiddenRssArticles')) || [];
+let mainRssArticleLink = localStorage.getItem('mainRssArticleLink') || null;
+
+// === СОХРАНЕНИЕ И ЗАГРУЗКА ПОЛЬЗОВАТЕЛЯ ===
+
+function saveUser() {
+    if (currentUser) {
+        localStorage.setItem('currentUser', JSON.stringify({
+            username: currentUser.username,
+            role: currentUser.role,
+            avatar: currentUser.avatar || 'image/icons/Noimage.jpg',
+            email: currentUser.email,
+            registrationDate: currentUser.registrationDate
+        }));
+    }
+}
+
+function loadUser() {
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+        currentUser = JSON.parse(storedUser);
+
+        if (document.getElementById('profile-username')) {
+            document.getElementById('profile-username').innerText = currentUser.username;
+        }
+        if (document.getElementById('profile-email')) {
+            document.getElementById('profile-email').value = currentUser.email || '';
+        }
+        if (document.getElementById('profile-registration-date')) {
+            document.getElementById('profile-registration-date').innerText = currentUser.registrationDate || '';
+        }
+        if (document.getElementById('profile-role')) {
+            document.getElementById('profile-role').innerText = currentUser.role || 'user';
+        }
+        if (document.getElementById('profile-avatar-header')) {
+            document.getElementById('profile-avatar-header').src = currentUser.avatar || 'image/icons/Noimage.jpg';
+        }
+        if (document.getElementById('profile-avatar-preview')) {
+            document.getElementById('profile-avatar-preview').src = currentUser.avatar || 'image/icons/Noimage.jpg';
+        }
+    }
+    updateAuthButtons();
+}
+
+
+// === СТАТЬИ ===
+
 function loadArticles(filteredCategory = 'все') {
+    console.log(`Загрузка статей категории: ${filteredCategory}`);
+
     const allArticlesContentDiv = document.getElementById('all-articles-content');
-    const newsContentDiv = document.getElementById('news-content').innerHTML = '';;
+    const newsContentDiv = document.getElementById('news-content');
     const reviewsContentDiv = document.getElementById('reviews-content');
     const guidesContentDiv = document.getElementById('guides-content');
     const existingArticlesDiv = document.getElementById('existing-articles');
     const mainArticleSelector = document.getElementById('main-article-selector');
 
-    allArticlesContentDiv.innerHTML = '';  // Очистка перед загрузкой
-    newsContentDiv.innerHTML = '';
-    reviewsContentDiv.innerHTML = '';
-    guidesContentDiv.innerHTML = '';
-    existingArticlesDiv.innerHTML = '';
-    mainArticleSelector.innerHTML = '<option disabled selected>Выберите статью</option>'; // Обновляем селектор
+    if (allArticlesContentDiv) allArticlesContentDiv.innerHTML = '';
+    if (newsContentDiv) newsContentDiv.innerHTML = '';
+    if (reviewsContentDiv) reviewsContentDiv.innerHTML = '';
+    if (guidesContentDiv) guidesContentDiv.innerHTML = '';
+    if (mainArticleSelector) {
+        mainArticleSelector.innerHTML = '<option disabled selected>Выберите статью</option>';
+    }
 
-    // Имитация загрузки статей из localStorage
     const storedArticles = JSON.parse(localStorage.getItem('articles')) || [];
     articles = storedArticles;
-
-    // Сортировка статей по дате публикации (по убыванию)
     articles.sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
 
     articles.forEach((article, index) => {
-        const imgElement = `<img src="${article.shortImage || 'image/icons/Noimage.jpg'}" alt="${article.title}" onerror="this.src='image/icons/Noimage.jpg';" style="max-width: 100%; border-radius: 5px;">`;
+        const { title, shortImage, category, publishDate } = article;
 
-        // Заполняем селектор для назначения главной статьи
-        mainArticleSelector.innerHTML += `<option value="${index}">${article.title}</option>`;
-
-        // Заполняем секции "Все статьи" и категорий
-        if (filteredCategory === 'все' || article.category === filteredCategory) {
-            allArticlesContentDiv.innerHTML += `
-                <div class="article-block" onclick="openFullArticle(${index})">
-                    <img src="${article.shortImage || 'image/icons/Noimage.jpg'}" alt="${article.title}" onerror="this.src='image/icons/Noimage.jpg';" />
-                    <div class="article-title">${article.title}</div>
-                </div>`;
+        if (mainArticleSelector) {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = title;
+            mainArticleSelector.appendChild(option);
         }
-                if (article.category === 'новости') {
-            newsContentDiv.innerHTML += `
-                <div class="article-block internal-news-block" onclick="openFullArticle(${index})">
-                    <img src="${article.shortImage || 'image/icons/Noimage.jpg'}" 
-                        alt="${article.title}" 
-                        onerror="this.src='image/icons/Noimage.jpg';" />
-                    <div class="article-title">${article.title}</div>
-                    <small>${new Date(article.publishDate).toLocaleDateString('ru-RU')}</small>
+
+        if ((filteredCategory === 'все' || article.category === filteredCategory) && allArticlesContentDiv) {
+            const articleBlock = document.createElement('div');
+            articleBlock.className = 'article-block';
+            articleBlock.onclick = () => openFullArticle(index);
+            articleBlock.innerHTML = `
+                <img src="${shortImage || 'image/icons/Noimage.jpg'}" alt="${title}" onerror="this.src='image/icons/Noimage.jpg';" />
+                <div class="article-title">${title}</div>
+            `;
+            allArticlesContentDiv.appendChild(articleBlock);
+        }
+
+        if (category === 'новости' && newsContentDiv) {
+            const articleBlock = document.createElement('div');
+            articleBlock.className = 'article-block internal-news-block';
+            articleBlock.onclick = () => openFullArticle(index);
+            articleBlock.innerHTML = `
+                <img src="${shortImage || 'image/icons/Noimage.jpg'}" alt="${title}" onerror="this.src='image/icons/Noimage.jpg';" />
+                <div class="article-title">${title}</div>
+            `;
+            newsContentDiv.appendChild(articleBlock);
+        } else if (category === 'обзоры' && reviewsContentDiv) {
+            const articleBlock = document.createElement('div');
+            articleBlock.className = 'article-block';
+            articleBlock.onclick = () => openFullArticle(index);
+            articleBlock.innerHTML = `
+                <img src="${shortImage || 'image/icons/Noimage.jpg'}" alt="${title}" onerror="this.src='image/icons/Noimage.jpg';" />
+                <div class="article-title">${title}</div>
+            `;
+            reviewsContentDiv.appendChild(articleBlock);
+        } else if (category === 'гайды' && guidesContentDiv) {
+            const articleBlock = document.createElement('div');
+            articleBlock.className = 'article-block';
+            articleBlock.onclick = () => openFullArticle(index);
+            articleBlock.innerHTML = `
+                <img src="${shortImage || 'image/icons/Noimage.jpg'}" alt="${title}" onerror="this.src='image/icons/Noimage.jpg';" />
+                <div class="article-title">${title}</div>
+            `;
+            guidesContentDiv.appendChild(articleBlock);
+        }
+    });
+
+    if (existingArticlesDiv) {
+        existingArticlesDiv.innerHTML = '';
+        articles.forEach((article, index) => {
+            const articleDiv = document.createElement('div');
+            articleDiv.className = 'existing-article';
+            articleDiv.innerHTML = `
+                <h4>${article.title}</h4>
+                <small style="color: #aaa;">(${article.category})</small>
+                <div>
+                    <button onclick="editArticle(${index})">Редактировать</button>
+                    <button onclick="deleteArticle(${index})">Удалить</button>
+                    <button onclick="setMainArticle(${index})" style="background-color: #4CAF50;">Сделать главной</button>
                 </div>
             `;
-        } else if (article.category === 'обзоры') {
-            reviewsContentDiv.innerHTML += `
-                <div class="article-block" onclick="openFullArticle(${index})">
-                    <img src="${article.shortImage || 'image/icons/Noimage.jpg'}" alt="${article.title}" onerror="this.src='image/icons/Noimage.jpg';" />
-                    <div class="article-title">${article.title}</div>
-                </div>`;
-        } else if (article.category === 'гайды') {
-            guidesContentDiv.innerHTML += `
-                <div class="article-block" onclick="openFullArticle(${index})">
-                    <img src="${article.shortImage || 'image/icons/Noimage.jpg'}" alt="${article.title}" onerror="this.src='image/icons/Noimage.jpg';" />
-                    <div class="article-title">${article.title}</div>
-                </div>`;
-        }
+            existingArticlesDiv.appendChild(articleDiv);
+        });
 
-        existingArticlesDiv.innerHTML += `
-            <div class="existing-article">
-                <h4>${article.title}</h4>
-                <button onclick='editArticle(${index})'>Редактировать</button>
-                <button onclick='deleteArticle(${index})'>Удалить</button>
-            </div>`;
-    });
+        if (existingArticlesDiv && (filteredCategory === 'все' || filteredCategory === 'новости')) {
+            externalNews
+                .filter(item => item && item.title && item.link && !hiddenRssArticles.includes(item.link))
+                .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))
+                .slice(0, 6)
+                .forEach(article => {
+                    const pubDate = new Date(article.pubDate).toLocaleDateString('ru-RU');
+                    const isMain = mainRssArticleLink === article.link;
+                    const articleDiv = document.createElement('div');
+                    articleDiv.className = 'existing-article';
+                    articleDiv.style = `border-left: 3px solid ${isMain ? 'green' : 'gold'};`;
+
+                    articleDiv.innerHTML = `
+                        <h4 style="color: ${isMain ? 'green' : 'gold'};">${article.title}</h4>
+                        <small style="color: #aaa;">(RSS) ${pubDate}</small>
+                        <div>
+                            ${isMain ? '<span style="color: #4CAF50; font-weight: bold;">Главная RSS</span>' : ''}
+                        </div>
+                    `;
+                    const openButton = document.createElement('button');
+                    openButton.textContent = 'Открыть';
+                    openButton.style.backgroundColor = '#2196F3';
+                    openButton.onclick = (e) => {
+                        e.stopPropagation();
+                        openFullRssArticle(article);
+                    };
+                    const hideButton = document.createElement('button');
+                    hideButton.textContent = 'Скрыть';
+                    hideButton.style.backgroundColor = '#f44336';
+                    hideButton.onclick = (e) => {
+                        e.stopPropagation();
+                        hideRssArticle(article.link);
+                    };
+                    const setMainButton = document.createElement('button');
+                    setMainButton.textContent = isMain ? 'Главная' : 'Сделать главной';
+                    setMainButton.style.backgroundColor = '#4CAF50';
+                    setMainButton.onclick = (e) => {
+                        e.stopPropagation();
+                        // Используем enclosure.url для изображения главной статьи
+                        let imageUrlForMain = 'image/icons/Noimage.jpg';
+                        if (article.enclosure && article.enclosure.url) {
+                            imageUrlForMain = article.enclosure.url;
+                        }
+                        setMainRssArticle(article.link, article.title.replace(/'/g, "\\'"), imageUrlForMain);
+                    };
+
+                    const buttonDiv = articleDiv.querySelector('div');
+                    buttonDiv.appendChild(openButton);
+                    buttonDiv.appendChild(hideButton);
+                    buttonDiv.appendChild(setMainButton);
+
+                    existingArticlesDiv.appendChild(articleDiv);
+                });
+        }
+    }
+
+    renderExternalNews();
+    loadRecentArticles();
+    loadMaterialsAndReleases();
 }
 
-// Функция для загрузки недавних статей
-// Функция для загрузки недавних статей
+// === НЕДАВНИЕ СТАТЬИ (СЛАЙДЕР) ===
+
 function loadRecentArticles() {
     const recentArticlesSliderContent = document.getElementById('recent-articles-slider-content');
-    recentArticlesSliderContent.innerHTML = ''; // Очистить содержимое слайдера
+    if (!recentArticlesSliderContent) return;
+    recentArticlesSliderContent.innerHTML = '';
 
-    // Получаем последние статьи (например, 6)
-    const recentArticles = articles.slice(0, 6); // Получаем первые 6 статей
-
-    // Сортируем последние статьи по дате публикации (по убыванию)
-    recentArticles.sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
+    const recentArticles = [...articles].sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate)).slice(0, 6);
 
     recentArticles.forEach((article, index) => {
         const articleBlock = document.createElement('div');
         articleBlock.className = 'recent-article-block';
+        articleBlock.onclick = () => openFullArticle(index);
         articleBlock.innerHTML = `
-            <a onclick="openFullArticle(${index}); return false;" style="text-decoration: none; color: inherit;">
-                <div class="article-image-container">
-                    <img src="${article.shortImage || 'image/icons/Noimage.jpg'}" alt="${article.title}" class="article-image" onerror="this.src='image/icons/Noimage.jpg';">
-                    <div class="recent-article-title">${article.title}</div>
-                </div>
-            </a>
+            <img src="${article.shortImage || 'image/icons/Noimage.jpg'}" alt="${article.title}" class="recent-article-image" onerror="this.src='image/icons/Noimage.jpg';">
+            <div class="recent-article-details">
+                <div class="recent-article-title">${article.title}</div>
+            </div>
         `;
         recentArticlesSliderContent.appendChild(articleBlock);
     });
+}
 
-    updateSliderPosition(); // Обновляем позицию слайдера в начале
+// === МАТЕРИАЛЫ И РЕЛИЗЫ (КОЛОНКИ) ===
+
+function loadMaterialsAndReleases() {
+    const materialsContent = document.getElementById('materials-content');
+    const releasesContent = document.getElementById('releases-content');
+
+    if (materialsContent) materialsContent.innerHTML = '';
+    if (releasesContent) releasesContent.innerHTML = '';
+
+    const materials = articles.filter(a => a.category === 'новости').sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate)).slice(0, 3);
+    const releases = articles.filter(a => a.category === 'обзоры').sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate)).slice(0, 3);
+
+    if (materialsContent) {
+        materials.forEach((article, index) => {
+            const materialCard = document.createElement('div');
+            materialCard.className = 'material-card';
+            materialCard.onclick = () => openFullArticle(articles.findIndex(a => a === article));
+            materialCard.innerHTML = `
+                <img src="${article.shortImage || 'image/icons/Noimage.jpg'}" alt="${article.title}" class="material-image" onerror="this.src='image/icons/Noimage.jpg';">
+                <div class="material-details">
+                    <h4>${article.title}</h4>
+                </div>
+            `;
+            materialsContent.appendChild(materialCard);
+        });
+    }
+
+    if (releasesContent) {
+        releases.forEach((article, index) => {
+            const releaseCard = document.createElement('div');
+            releaseCard.className = 'release-card';
+            releaseCard.onclick = () => openFullArticle(articles.findIndex(a => a === article));
+            releaseCard.innerHTML = `
+                <img src="${article.shortImage || 'image/icons/Noimage.jpg'}" alt="${article.title}" class="release-image" onerror="this.src='image/icons/Noimage.jpg';">
+                <div class="release-details">
+                    <h4>${article.title}</h4>
+                </div>
+            `;
+            releasesContent.appendChild(releaseCard);
+        });
+    }
+}
+
+
+// === УПРАВЛЕНИЕ RSS СТАТЬЯМИ (ФУНКЦИИ) ===
+
+function hideRssArticle(link) {
+    if (!hiddenRssArticles.includes(link)) {
+        hiddenRssArticles.push(link);
+        localStorage.setItem('hiddenRssArticles', JSON.stringify(hiddenRssArticles));
+        if (mainRssArticleLink === link) {
+            mainRssArticleLink = null;
+            localStorage.removeItem('mainRssArticleLink');
+            localStorage.removeItem('mainRssArticleTitle');
+            localStorage.removeItem('mainRssArticleThumbnail');
+            loadMainArticle();
+        }
+        loadArticles(getCurrentCategory());
+        alert("Новость скрыта.");
+    }
+}
+
+function setMainRssArticle(link, title, thumbnail) {
+    mainRssArticleLink = link;
+    localStorage.setItem('mainRssArticleLink', link);
+    localStorage.setItem('mainRssArticleTitle', title);
+    localStorage.setItem('mainRssArticleThumbnail', thumbnail);
+    loadMainArticle();
+    loadArticles(getCurrentCategory());
+    alert(`Новость "${title}" назначена главной.`);
 }
 
 // === ВНЕШНИЕ НОВОСТИ ИЗ RSS ===
 
-// Функция для отображения внешних новостей
-function renderExternalNews() {
-    const container = document.getElementById('external-news-container');
+function appendNewsToContainer(newsList, container, count) {
     if (!container) return;
-
-    // Очищаем только внешние новости
-    container.innerHTML = `
-        <h3 style="color: gold; margin: 20px 0 10px;">🎮 Внешние новости (Igromania)</h3>
-        <div id="external-news-grid" style="display: flex; flex-wrap: wrap; gap: 15px;"></div>
-    `;
-
-    const grid = document.getElementById('external-news-grid');
-
-    externalNews
+    container.innerHTML = '';
+    const filteredNews = newsList.filter(item => item && item.title && item.link && !hiddenRssArticles.includes(item.link));
+    const sortedNews = [...filteredNews]
         .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))
-        .slice(0, 6)
-        .forEach(article => {
-            const pubDate = new Date(article.pubDate).toLocaleDateString('ru-RU');
-            const title = article.title.length > 70 ? article.title.slice(0, 70) + '...' : article.title;
+        .slice(0, count);
 
-            const articleDiv = document.createElement('div');
-            articleDiv.style = `
-                width: calc(33.33% - 15px);
-                border: 1px solid #444;
-                border-radius: 8px;
-                overflow: hidden;
-                background: #1e1e1e;
-            `;
-            articleDiv.innerHTML = `
-                <a href="${article.link}" target="_blank" style="text-decoration: none; color: inherit;">
-                    <img src="${article.thumbnail || 'image/icons/Noimage.jpg'}" 
-                         alt="${title}" 
-                         onerror="this.src='image/icons/Noimage.jpg';" 
-                         style="width: 100%; height: 150px; object-fit: cover;">
-                    <div style="padding: 10px;">
-                        <div style="font-weight: bold; color: #fff; font-size: 0.95em;">${title}</div>
-                        <small style="color: #aaa;">${pubDate}</small>
-                        <p style="color: #ccc; font-size: 0.85em; margin-top: 5px;">
-                            ${article.description.replace(/<[^>]*>/g, '').slice(0, 100)}...
-                        </p>
-                    </div>
-                </a>
-            `;
-            grid.appendChild(articleDiv);
-        });
-}
+    sortedNews.forEach(article => {
+        const displayDate = article.pubDate ? new Date(article.pubDate).toLocaleDateString('ru-RU') : '';
+        const title = article.title.length > 70 ? article.title.slice(0, 70) + '...' : article.title;
+        const articleDiv = document.createElement('div');
+        articleDiv.style = `
+            width: calc(33.33% - 15px);
+            border: 1px solid #444;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #1e1e1e;
+            transition: transform 0.2s;
+            cursor: pointer;
+        `;
+        articleDiv.onmouseover = () => articleDiv.style.transform = 'scale(1.02)';
+        articleDiv.onmouseout = () => articleDiv.style.transform = 'scale(1)';
+        articleDiv.onclick = () => openFullRssArticle(article);
 
-// === ЗАГРУЗКА RSS ЧЕРЕЗ rss2json ===
-fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.igromania.ru/rss/news.xml')
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === 'ok' && Array.isArray(data.items)) {
-            externalNews = data.items
-                .filter(item => item && item.title && item.link) // Валидация
-                .slice(0, 10); // Ограничиваем, чтобы не грузить слишком много
-
-            console.log(`✅ Загружено ${externalNews.length} внешних новостей`);
-            renderExternalNews(); // Отображаем
-        } else {
-            console.error('❌ Ошибка в ответе RSS:', data);
-            showExternalNewsError('Сервис новостей временно недоступен.');
+        // --- КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: Используем enclosure.url ---
+        let imageUrl = 'image/icons/Noimage.jpg';
+        if (article.enclosure && article.enclosure.url) {
+            imageUrl = article.enclosure.url;
         }
-    })
-    .catch(err => {
-        console.error('❌ Ошибка сети:', err);
-        showExternalNewsError('Не удалось подключиться к источнику новостей.');
+        // --- КОНЕЦ ИЗМЕНЕНИЯ ---
+
+        let description = '';
+        if (article.description) {
+             description = article.description.replace(/<[^>]*>/g, '').slice(0, 90) + '...';
+        }
+
+        articleDiv.innerHTML = `
+            <div style="height: 100%; display: flex; flex-direction: column;">
+                <img src="${imageUrl}"
+                     alt="${title}"
+                     onerror="this.src='image/icons/Noimage.jpg';"
+                     style="width: 100%; height: 150px; object-fit: cover; flex-shrink: 0;">
+                <div style="padding: 10px; flex-grow: 1; display: flex; flex-direction: column;">
+                    <div style="font-weight: bold; color: #fff; font-size: 0.95em; margin-bottom: 5px; flex-grow: 1;">${title}</div>
+                    ${displayDate ? `<small style="color: #aaa; display: block; margin-bottom: 5px;">${displayDate}</small>` : ''}
+                    <p style="color: #ccc; font-size: 0.85em; margin: 0 0 10px 0; flex-grow: 1;">
+                        ${description}
+                    </p>
+                    <div style="margin-top: auto;">
+                        <span style="background-color: #4CAF50; color: white; padding: 3px 6px; border-radius: 3px; font-size: 0.75em;">RSS</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.appendChild(articleDiv);
     });
-
-// Функция для отображения ошибки
-function showExternalNewsError(message) {
-    const newsContentDiv = document.getElementById('news-content');
-    if (!newsContentDiv) return;
-
-    const errorDiv = document.createElement('div');
-    errorDiv.id = 'external-news-section';
-    errorDiv.innerHTML = `
-        <h3 style="color: #ffd700;">🎮 Внешние новости</h3>
-        <p style="color: #ff6b6b; font-style: italic;">⚠️ ${message}</p>
-    `;
-    newsContentDiv.appendChild(errorDiv);
 }
 
+function renderExternalNews() {
+    const containerNews = document.getElementById('external-news-container');
+    const homeGrid = document.getElementById('home-external-news-grid');
 
+    if (containerNews) {
+        let externalNewsGrid = document.getElementById('external-news-grid');
+        if (!externalNewsGrid) {
+             containerNews.innerHTML = `
+                <h3 style="color: gold; margin: 20px 0 10px;">🎮 Игровые новости</h3>
+                <div id="external-news-grid" style="display: flex; flex-wrap: wrap; gap: 15px;"></div>
+            `;
+             externalNewsGrid = document.getElementById('external-news-grid');
+        }
+        appendNewsToContainer(externalNews, externalNewsGrid, 6);
+    }
 
-// Вызовите эту функцию при загрузке страницы, чтобы загрузить все статьи
-document.addEventListener('DOMContentLoaded', () => {
-    loadUser(); // Загружаем текущего пользователя при загрузке страницы
-    loadArticles('все'); // Загружаем все статьи при инициализации
-    loadRecentArticles(); // Загружаем недавние статьи при загрузке страницы
-    loadMainArticle(); // Загружаем основную статью
-});
-
-// Устанавливаем основную статью
-function setMainArticle() {
-    const selector = document.getElementById('main-article-selector');
-    mainArticleIndex = selector.value;
-
-    // Сохраним индекс в localStorage для будущих загрузок
-    localStorage.setItem('mainArticleIndex', mainArticleIndex);
-    loadMainArticle();
-}
-
-
-// При загрузке страницы восстановить выбранную основную статью из localStorage
-function loadMainArticle() {
-    const storedMainArticleIndex = localStorage.getItem('mainArticleIndex');
-    mainArticleIndex = storedMainArticleIndex ? parseInt(storedMainArticleIndex) : 0; // По умолчанию первая статья
-
-    const article = articles[mainArticleIndex];
-    if (article) {
-        document.querySelector('.main-article-title').innerText = article.title;
-        document.querySelector('.main-article-image').src = article.shortImage || 'image/icons/Noimage.jpg';
-        document.querySelector('.main-article-content').innerHTML = article.content;
+    if (homeGrid) {
+        appendNewsToContainer(externalNews, homeGrid, 4);
     }
 }
 
-let currentIndex = 0;
-const articlesToShow = 3; // Количество статей, показываемых одновременно
+// === ЗАГРУЗКА RSS ===
+// ИЗМЕНЕН URL НА STOPGAME
+fetch('https://api.rss2json.com/v1/api.json?rss_url=https://rss.stopgame.ru/rss_all.xml')
+    .then(res => {
+        if (!res.ok) {
+             throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+    })
+    .then(data => {
+        console.log('Получен ответ от RSS API (StopGame):', data);
+        if (data.status === 'ok' && data.items) {
+            externalNews = data.items.filter(item =>
+                item &&
+                item.title &&
+                item.link
+            );
+            console.log('✅ RSS StopGame загружен и отфильтрован:', externalNews);
+        } else {
+            console.warn('⚠️ RSS API вернул статус "fail" или пустой items:', data);
+        }
+    })
+    .catch(err => {
+        console.error('❌ Ошибка загрузки или обработки RSS (StopGame):', err);
+    })
+    .finally(() => {
+        console.log("Загрузка статей после попытки загрузки RSS...");
+        loadArticles('все');
+    });
 
-// Оживите слайдер
-function updateSliderPosition() {
-    const recentArticlesSliderContent = document.getElementById('recent-articles-slider-content');
-    const offset = -currentIndex * (100 / articlesToShow); // Рассчитываем смещение
-    recentArticlesSliderContent.style.transform = `translateX(${offset}%)`; // Применяем смещение
-}
 
-// Функция для следующего слайда
-function nextSlide() {
-    const totalSlides = Math.ceil(articles.length / articlesToShow);
-    currentIndex = (currentIndex + 1) % totalSlides; // Рассчитываем новый индекс
-    updateSliderPosition();
-}
+// === НАВИГАЦИЯ И ОТОБРАЖЕНИЕ СЕКЦИЙ ===
 
-// Функция для предыдущего слайда
-function prevSlide() {
-    const totalSlides = Math.ceil(articles.length / articlesToShow);
-    currentIndex = (currentIndex - 1 + totalSlides) % totalSlides; // Рассчитываем новый индекс
-}
+function showSection(sectionId) {
+    console.log(`Показ секции: ${sectionId}`);
 
-// Открытие полной статьи с анимацией
-function openFullArticle(index) {
-    const article = articles[index];
-    document.getElementById('full-article-title').innerText = article.title;
-    document.getElementById('full-article-content').innerHTML = article.content;
-
-    // Показываем полную статью с анимацией
-    const fullArticleSection = document.getElementById('full-article');
-
-    // Убедитесь, что секция статьи не скрыта
-    fullArticleSection.style.display = 'block';
-
-    // Убираем видимость остальных секций для плавного перехода
     document.querySelectorAll('.container').forEach(section => {
-        if (section.id !== 'full-article') { // Если это не полная статья
-            section.classList.remove('visible'); // Убираем класс видимости
+        if (section.id !== sectionId) {
+            section.classList.remove('visible');
             setTimeout(() => {
-                section.style.display = 'none'; // Скрываем элемент из view
-            }, 500); // Задержка перед скрытием, чтобы анимация завершилась
+                section.style.display = 'none';
+            }, 500);
         }
     });
 
-    // Добавляем класс видимости для полной статьи
-    setTimeout(() => {
-        fullArticleSection.classList.add('visible'); // Добавляем класс видимости для анимации
-    }, 0);
+    const activeSection = document.getElementById(sectionId);
+    if (activeSection) {
+        activeSection.style.display = 'block';
+        setTimeout(() => {
+            activeSection.classList.add('visible');
+        }, 0);
+
+        if (sectionId === 'home') {
+            loadMainArticle();
+        } else if (sectionId === 'news') {
+            loadArticles('новости');
+        } else if (sectionId === 'reviews') {
+            loadArticles('обзоры');
+        } else if (sectionId === 'guides') {
+            loadArticles('гайды');
+        } else if (sectionId === 'admin') {
+            loadArticles('все');
+        } else if (sectionId === 'community') {
+            loadArticlesForDiscussion();
+        } else if (sectionId === 'profile') {
+        } else if (sectionId === 'auth') {
+        }
+    } else {
+        console.error(`Секция с id '${sectionId}' не найдена.`);
+    }
 }
 
-let currentArticleIndex = null; // Индекс текущей статьи для комментариев
+function getCurrentCategory() {
+     const visibleSection = document.querySelector('.container:not(.hidden):not(.hidden)');
+     if (visibleSection) {
+         if (visibleSection.id === 'news') return 'новости';
+         if (visibleSection.id === 'reviews') return 'обзоры';
+         if (visibleSection.id === 'guides') return 'гайды';
+     }
+     return 'все';
+}
 
-// Функция для загрузки статей для обсуждения
+// === ГЛАВНАЯ СТАТЬЯ ===
+
+let mainArticleIndex = localStorage.getItem('mainArticleIndex') ? parseInt(localStorage.getItem('mainArticleIndex'), 10) : null;
+
+function setMainArticle(index) {
+    if (articles[index]) {
+        mainArticleIndex = index;
+        localStorage.setItem('mainArticleIndex', mainArticleIndex);
+        loadMainArticle();
+        loadArticles(getCurrentCategory());
+        alert(`Статья "${articles[index].title}" назначена главной.`);
+    }
+}
+
+function loadMainArticle() {
+    const titleElement = document.querySelector('.main-article-title');
+    const imageElement = document.querySelector('.main-article-image');
+
+    const storedRssLink = localStorage.getItem('mainRssArticleLink');
+    if (storedRssLink) {
+        const rssArticle = externalNews.find(item => item.link === storedRssLink);
+        if (rssArticle && titleElement && imageElement) {
+            titleElement.innerText = localStorage.getItem('mainRssArticleTitle') || rssArticle.title;
+            
+            // --- КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: Используем enclosure.url или сохраненный thumbnail ---
+            let mainRssImageUrl = localStorage.getItem('mainRssArticleThumbnail');
+            if (!mainRssImageUrl || mainRssImageUrl === 'image/icons/Noimage.jpg') {
+                 if (rssArticle.enclosure && rssArticle.enclosure.url) {
+                    mainRssImageUrl = rssArticle.enclosure.url;
+                 }
+                 mainRssImageUrl = mainRssImageUrl || 'image/icons/Noimage.jpg';
+                 localStorage.setItem('mainRssArticleThumbnail', mainRssImageUrl);
+            }
+            // --- КОНЕЦ ИЗМЕНЕНИЯ ---
+            
+            imageElement.src = mainRssImageUrl;
+            imageElement.onerror = function() { this.src = 'image/icons/Noimage.jpg'; };
+            // Открытие в новой вкладке для RSS
+            imageElement.parentElement.parentElement.onclick = () => window.open(rssArticle.link, '_blank');
+            return;
+        }
+    }
+
+    const indexToLoad = mainArticleIndex !== null ? mainArticleIndex : (articles.length > 0 ? 0 : null);
+    const article = articles[indexToLoad];
+
+    if (article && titleElement && imageElement) {
+        titleElement.innerText = article.title;
+        imageElement.src = article.shortImage || 'image/icons/Noimage.jpg';
+        imageElement.onerror = function() { this.src = 'image/icons/Noimage.jpg'; };
+        // Открытие внутренней статьи
+        imageElement.parentElement.parentElement.onclick = () => openFullArticle(indexToLoad);
+    } else if (titleElement) {
+        titleElement.innerText = "Статья не выбрана";
+        if(imageElement) imageElement.src = 'image/icons/Noimage.jpg';
+        if(imageElement) imageElement.parentElement.parentElement.onclick = null;
+    }
+}
+
+
+// === ПОЛНАЯ СТАТЬЯ ===
+
+function openFullArticle(index) {
+    const article = articles[index];
+    if (!article) {
+        console.error("Статья не найдена по индексу:", index);
+        return;
+    }
+    const titleElement = document.getElementById('full-article-title');
+    const contentElement = document.getElementById('full-article-content');
+
+    if (titleElement && contentElement) {
+        titleElement.innerText = article.title;
+        contentElement.innerHTML = article.content;
+        showSection('full-article');
+    } else {
+        console.error("Элементы для отображения полной статьи не найдены.");
+    }
+}
+
+// === ПОЛНАЯ RSS СТАТЬЯ ===
+
+function openFullRssArticle(rssItem) {
+    const titleElement = document.getElementById('full-rss-article-title');
+    const metaElement = document.getElementById('full-rss-article-meta');
+    const contentElement = document.getElementById('full-rss-article-content');
+    const linkElement = document.getElementById('full-rss-article-link');
+
+    if (titleElement && metaElement && contentElement && linkElement) {
+        titleElement.innerText = rssItem.title || 'Без заголовка';
+
+        const pubDate = rssItem.pubDate ? new Date(rssItem.pubDate).toLocaleString('ru-RU') : 'Дата не указана';
+        metaElement.innerText = `Опубликовано: ${pubDate}`;
+        metaElement.style.color = '#aaa';
+        metaElement.style.fontSize = '0.9em';
+        metaElement.style.marginBottom = '15px';
+
+        contentElement.innerHTML = rssItem.description || rssItem['content:encoded'] || '<p>Содержимое недоступно.';
+
+        linkElement.href = rssItem.link || '#';
+        linkElement.innerText = 'Читать оригинал на источнике';
+
+        showSection('full-rss-article');
+    } else {
+        console.error("Элементы для отображения полной RSS статьи не найдены.");
+        if (rssItem.link) {
+             window.open(rssItem.link, '_blank');
+        }
+    }
+}
+
+
+// === СООБЩЕСТВО (КОММЕНТАРИИ) ===
+
 function loadArticlesForDiscussion() {
     const articlesList = document.getElementById('articles-list');
-    articlesList.innerHTML = ''; // Очистка текущего содержимого
+    if (!articlesList) return;
+    articlesList.innerHTML = '';
 
     articles.forEach((article, index) => {
+        if (document.getElementById(`comment-form-${index}`)) return;
+
         const articleDiv = document.createElement('div');
-        articleDiv.className = 'article-preview'; // Общий класс для статьи
+        articleDiv.className = 'article-preview';
         articleDiv.innerHTML = `
-            <h4 class="article-title">${article.title}</h4> <!-- Используем класс article-title -->
-            <p class="article-content">${article.content.substring(0, 100)}...</p> <!-- Сокращенное содержание -->
+            <h4 class="article-title">${article.title}</h4>
+            <p class="article-content">${(article.content || '').replace(/<[^>]*>/g, '').substring(0, 100)}...</p>
             <button class="add-feedback-button" onclick="showCommentForm(${index})">Комментировать</button>
             <div class="feedback-list" id="feedback-list-${index}"></div>
+            <div id="comment-form-${index}" style="display:none; margin-top: 10px;">
+                <div id="quill-container-${index}" style="height: 100px;"></div>
+                <button onclick="addComment(${index})">Добавить комментарий</button>
+            </div>
         `;
         articlesList.appendChild(articleDiv);
+        loadFeedbacksForArticle(index);
     });
 }
 
-// Функция для отображения формы комментариев
 function showCommentForm(articleIndex) {
     const commentForm = document.getElementById(`comment-form-${articleIndex}`);
-    commentForm.style.display = 'block'; // Показываем форму комментариев
+    if (!commentForm) return;
+    const isVisible = commentForm.style.display !== 'none';
+    commentForm.style.display = isVisible ? 'none' : 'block';
 
-    // Инициализация Quill для комментариев
-    const quillContainer = document.getElementById(`quill-container-${articleIndex}`);
-    quillContainer.innerHTML = ''; // Очистка предыдущего содержимого
-    const quill = new Quill(`#quill-container-${articleIndex}`, {
-        modules: {
-            toolbar: [
-                ['bold', 'italic', 'underline'],
-            ],
-        },
-        placeholder: 'Напишите свой комментарий...',
-        theme: 'snow',
-    });
+    if (!isVisible) {
+        const quillContainerId = `quill-container-${articleIndex}`;
+        const existingQuill = document.querySelector(`#${quillContainerId} .ql-editor`);
+        if (!existingQuill) {
+             new Quill(`#${quillContainerId}`, {
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline'],
+                    ],
+                },
+                placeholder: 'Напишите свой комментарий...',
+                theme: 'snow',
+            });
+        }
+    }
 }
 
-// Функция для добавления комментария
 function addComment(articleIndex) {
-    const quillContainer = document.getElementById(`quill-container-${articleIndex}`);
-    const commentContent = quillContainer.firstChild.innerHTML; // Получаем содержимое из Quill
+    const quillContainerId = `quill-container-${articleIndex}`;
+    const quillContainer = document.querySelector(`#${quillContainerId}`);
+    if (!quillContainer) {
+        console.error("Контейнер Quill не найден для индекса:", articleIndex);
+        return;
+    }
 
-    if (commentContent.trim() === '') {
+    const quillEditor = quillContainer.querySelector('.ql-editor');
+    if (!quillEditor) {
+        console.error("Редактор Quill не найден в контейнере:", quillContainerId);
+        return;
+    }
+
+    const commentContent = quillEditor.innerHTML;
+    if (commentContent.trim() === '' || commentContent === '<p><br></p>') {
         alert("Пожалуйста, напишите комментарий.");
         return;
     }
 
     if (!feedbacks[articleIndex]) {
-        feedbacks[articleIndex] = []; // Если нет отзывов для этой статьи, создаем массив
+        feedbacks[articleIndex] = [];
     }
+    feedbacks[articleIndex].push(commentContent);
+    localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
+    loadFeedbacksForArticle(articleIndex);
 
-    feedbacks[articleIndex].push(commentContent); // Сохраняем комментарий
-    loadFeedbacksForArticle(articleIndex); // Обновляем отзывы для статьи
-
-    // Скрыть форму после добавления комментария
-    document.getElementById(`comment-form-${articleIndex}`).style.display = 'none';
-    quillContainer.innerHTML = ''; // Очищаем Quill
+    const commentForm = document.getElementById(`comment-form-${articleIndex}`);
+    if (commentForm) {
+        commentForm.style.display = 'none';
+    }
+    const quillInstance = Quill.find(quillEditor.parentNode);
+    if (quillInstance) {
+        quillInstance.setContents([{ insert: '\n' }]);
+    }
 }
 
-// Функция для отображения отзывов на статью
 function loadFeedbacksForArticle(articleIndex) {
     const feedbackList = document.getElementById(`feedback-list-${articleIndex}`);
-    feedbackList.innerHTML = ''; // Очистка текущих отзывов
+    if (!feedbackList) return;
+    feedbackList.innerHTML = '';
 
-    const articleFeedbacks = feedbacks[articleIndex] || []; // Получаем отзывы для статьи
-
+    const articleFeedbacks = feedbacks[articleIndex] || [];
     if (articleFeedbacks.length === 0) {
         feedbackList.innerHTML = '<p>Нет комментариев.</p>';
     } else {
         articleFeedbacks.forEach((feedback) => {
             const feedbackDiv = document.createElement('div');
             feedbackDiv.className = 'feedback';
-            feedbackDiv.innerHTML = feedback; // Используем innerHTML для отображения форматированного текста
+            feedbackDiv.innerHTML = feedback;
             feedbackList.appendChild(feedbackDiv);
         });
     }
 }
 
 
-// Функция для редактирования статьи
-let currentEditingIndex = null;
+// === АДМИНКА ===
 
 function editArticle(index) {
     const article = articles[index];
-    document.getElementById('article-title').value = article.title;
-    document.getElementById('article-category').value = article.category;
-    quill.root.innerHTML = article.content;
-
+    if (!article) return;
+    document.getElementById('article-title').value = article.title || '';
+    document.getElementById('article-category').value = article.category || '';
+    quill.root.innerHTML = article.content || '';
     currentEditingIndex = index;
+    showSection('admin');
 }
 
-// Функция для удаления статьи
 function deleteArticle(index) {
     if (confirm("Вы уверены, что хотите удалить эту статью?")) {
         articles.splice(index, 1);
         localStorage.setItem('articles', JSON.stringify(articles));
-        loadArticles();
-        loadRecentArticles(); // Обновить недавние статьи после удаления
+        if (mainArticleIndex === index) {
+            mainArticleIndex = articles.length > 0 ? 0 : null;
+            localStorage.setItem('mainArticleIndex', mainArticleIndex);
+            loadMainArticle();
+        } else if (mainArticleIndex !== null && mainArticleIndex > index) {
+            mainArticleIndex--;
+            localStorage.setItem('mainArticleIndex', mainArticleIndex);
+        }
+        loadArticles(getCurrentCategory());
         alert("Статья удалена!");
     }
 }
 
-// Добавление новой статьи
 function addArticle() {
-    const title = document.getElementById('article-title').value;
+    const title = document.getElementById('article-title').value.trim();
     const shortImageInput = document.getElementById('article-short-image');
-    const content = quill.root.innerHTML;
+    const content = quill.root.innerHTML.trim();
     const category = document.getElementById('article-category').value;
 
-    if (title && content && category) {
-        let shortImage = '';
-        if (shortImageInput.files.length > 0) {
-            const file = shortImageInput.files[0];
-            const reader = new FileReader();
-            reader.onloadend = function () {
-                shortImage = reader.result;
-                saveArticle(title, content, category, shortImage);
-            };
-            reader.readAsDataURL(file);
-        } else {
+    if (!title || !content || !category) {
+        alert("Пожалуйста, заполните все обязательные поля (Заголовок, Категория, Содержимое).");
+        return;
+    }
+
+    let shortImage = '';
+    if (shortImageInput.files.length > 0) {
+        const file = shortImageInput.files[0];
+        const reader = new FileReader();
+        reader.onloadend = function () {
+            shortImage = reader.result;
             saveArticle(title, content, category, shortImage);
-        }
+        };
+        reader.readAsDataURL(file);
     } else {
-        alert("Пожалуйста, заполните все поля.");
+        saveArticle(title, content, category, shortImage);
     }
 }
 
-// Сохранение статьи
 function saveArticle(title, content, category, shortImage) {
-    const publishDate = new Date().toISOString(); // Устанавливаем дату и время
-    if (currentEditingIndex !== null) {
-        // Изменяем существующую статью
-        articles[currentEditingIndex] = { title, content, category, shortImage, publishDate };
+    const publishDate = new Date().toISOString();
+
+    if (currentEditingIndex !== null && articles[currentEditingIndex]) {
+        articles[currentEditingIndex] = { ...articles[currentEditingIndex], title, content, category, shortImage, publishDate };
         currentEditingIndex = null;
     } else {
-        // Добавляем новую статью
         articles.push({ title, content, category, shortImage, publishDate });
     }
-
     localStorage.setItem('articles', JSON.stringify(articles));
     alert(`Статья "${title}" сохранена!`);
     clearArticleForm();
-    loadArticles('все');
-    loadRecentArticles(); // Обновить недавние статьи после добавления
+    loadArticles(getCurrentCategory());
 }
 
-// Очистка формы добавления статьи
 function clearArticleForm() {
     document.getElementById('article-title').value = '';
     document.getElementById('article-short-image').value = '';
+    document.getElementById('article-category').value = '';
     quill.root.innerHTML = '';
+    currentEditingIndex = null;
 }
+
+
+// === ПРОФИЛЬ ===
 
 function toggleProfileMenu() {
     const profileMenu = document.getElementById('profile-menu');
-    profileMenu.classList.toggle('hidden'); // Переключаем класс для отображения меню
+    if (profileMenu) profileMenu.classList.toggle('hidden');
 }
 
 function closeProfileMenu() {
     const profileMenu = document.getElementById('profile-menu');
-    profileMenu.classList.add('hidden'); // Скрыть меню
+    if (profileMenu) profileMenu.classList.add('hidden');
 }
-// Закрытие меню, когда пользователь кликает вне его
+
 document.addEventListener('click', function (event) {
     const menu = document.getElementById('profile-menu');
     const avatar = document.getElementById('profile-avatar-header');
-
-    if (!menu.contains(event.target) && !avatar.contains(event.target)) {
-        menu.classList.add('hidden'); // Скрыть меню
+    if (menu && avatar && !menu.contains(event.target) && !avatar.contains(event.target)) {
+        menu.classList.add('hidden');
     }
 });
 
-
-// Сохранение текущего пользователя в localStorage
-function saveUser() {
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-}
-
-// Загрузка пользователя
-function loadUser() {
-    const storedUser = localStorage.getItem('currentUser');
-    currentUser = storedUser ? JSON.parse(storedUser) : adminUser;
-
-    document.getElementById('profile-username').innerText = currentUser.username;
-    document.getElementById('profile-email').value = currentUser.email || '';
-    document.getElementById('profile-registration-date').innerText = currentUser.registrationDate || '';
-    document.getElementById('profile-role').innerText = currentUser.role || 'user';
-
-    document.getElementById('profile-avatar-header').src = currentUser.avatar || 'image/icons/Noimage.jpg';
-    document.getElementById('profile-avatar-preview').src = currentUser.avatar || 'image/icons/Noimage.jpg';
-
-    updateAuthButtons();
-}
-
-// Сохранение данных профиля
 function saveProfile() {
+    if (!currentUser) {
+        alert("Пользователь не авторизован.");
+        return;
+    }
     currentUser.email = document.getElementById('profile-email').value;
-
-    // Установка аватара
     const avatarInput = document.getElementById('avatar-upload');
-    if (avatarInput.files.length > 0) {
+    if (avatarInput && avatarInput.files.length > 0) {
         const file = avatarInput.files[0];
-        const reader = new FileReader();
-        reader.onloadend = function () {
-            currentUser.avatar = reader.result; // Устанавливаем аватар
-            document.getElementById('profile-avatar-preview').src = currentUser.avatar; // Отображаем аватар
-            saveUser(); // Сохраняем пользователя
+        if (file) {
+             const reader = new FileReader();
+             reader.onloadend = function () {
+                currentUser.avatar = reader.result;
+                if (document.getElementById('profile-avatar-preview')) {
+                    document.getElementById('profile-avatar-preview').src = currentUser.avatar;
+                }
+                if (document.getElementById('profile-avatar-header')) {
+                     document.getElementById('profile-avatar-header').src = currentUser.avatar;
+                }
+                saveUser();
+                alert("Изменения успешно сохранены!");
+             };
+             reader.readAsDataURL(file);
+        } else {
+            saveUser();
             alert("Изменения успешно сохранены!");
-        };
-        reader.readAsDataURL(file);
+        }
     } else {
-        saveUser(); // Сохраняем, если аватар не изменен
+        saveUser();
         alert("Изменения успешно сохранены!");
     }
 }
 
-let cropper; // Переменная для хранения экземпляра Cropper
+let cropper;
 
-// Обработчик для загрузки изображения
 document.getElementById('avatar-upload').addEventListener('change', (event) => {
     const file = event.target.files[0];
-    if (file) {
+    const cropImage = document.getElementById('crop-image');
+    const cropContainer = document.getElementById('crop-container');
+    const croppedImagePreview = document.getElementById('cropped-image');
+
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+    if (cropImage) cropImage.src = '';
+    if (croppedImagePreview) {
+        croppedImagePreview.src = '';
+        croppedImagePreview.style.display = 'none';
+    }
+    if (cropContainer) cropContainer.style.display = 'none';
+
+    if (file && cropImage && cropContainer) {
         const reader = new FileReader();
         reader.onload = function (e) {
-            const cropImage = document.getElementById('crop-image');
             cropImage.src = e.target.result;
-            cropImage.style.display = 'block';
-            document.getElementById('crop-container').style.display = 'block';
-
-            if (cropper) cropper.destroy();
-            cropper = new Cropper(cropImage, {
-                aspectRatio: 1,
-                viewMode: 1,
-                autoCropArea: 1
-            });
+            cropImage.onload = () => {
+                 cropContainer.style.display = 'block';
+                 cropper = new Cropper(cropImage, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    autoCropArea: 1
+                });
+            };
         };
         reader.readAsDataURL(file);
     }
 });
 
-
-// Функция для обрезки изображения
 function cropImage() {
     if (cropper) {
         const canvas = cropper.getCroppedCanvas({ width: 100, height: 100 });
         const croppedDataURL = canvas.toDataURL('image/png');
-
         const preview = document.getElementById('cropped-image');
-        preview.src = croppedDataURL;
-        preview.style.display = 'block';
+        if (preview) {
+            preview.src = croppedDataURL;
+            preview.style.display = 'block';
+        }
     }
 }
 
-// Функция для сохранения аватара
-function cropImage() {
-    if (cropper) {
-        const canvas = cropper.getCroppedCanvas({ width: 100, height: 100 });
-        const croppedDataURL = canvas.toDataURL('image/png');
-
-        const preview = document.getElementById('cropped-image');
-        preview.src = croppedDataURL;
-        preview.style.display = 'block';
+function saveAvatar() {
+    const croppedImage = document.getElementById('cropped-image');
+    if (croppedImage && croppedImage.src && croppedImage.src.startsWith('data:image')) {
+        if (currentUser) {
+            currentUser.avatar = croppedImage.src;
+            if (document.getElementById('profile-avatar-preview')) {
+                document.getElementById('profile-avatar-preview').src = currentUser.avatar;
+            }
+            if (document.getElementById('profile-avatar-header')) {
+                 document.getElementById('profile-avatar-header').src = currentUser.avatar;
+            }
+            saveUser();
+            alert("Аватар успешно сохранен!");
+            const cropContainer = document.getElementById('crop-container');
+            if (cropContainer) cropContainer.style.display = 'none';
+        } else {
+            alert("Пользователь не авторизован.");
+        }
+    } else {
+        alert("Сначала обрежьте изображение.");
     }
 }
 
 
-
+// === АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ ===
 
 function updateAuthButtons() {
     const authButton = document.getElementById('auth-button');
     const profileAvatar = document.getElementById('profile-avatar-header');
-    const adminLink = document.getElementById('admin-link'); // Ссылка на админку
+    const adminLink = document.getElementById('admin-link');
 
     if (currentUser) {
-        authButton.classList.add('hidden');
-        profileAvatar.src = currentUser.avatar || 'image/icons/Noimage.jpg'; // Устанавливаем путь к аватару
-        profileAvatar.classList.remove('hidden'); // Отображаем аватар
-
-        // Проверяем, является ли текущий пользователь администратором
-        if (currentUser.role === 'admin') {
-            adminLink.classList.remove('hidden'); // Показываем ссылку на админку
-        } else {
-            adminLink.classList.add('hidden'); // Скрываем ссылку на админку
+        if (authButton) authButton.style.display = 'none';
+        if (profileAvatar) {
+            profileAvatar.src = currentUser.avatar || 'image/icons/Noimage.jpg';
+            profileAvatar.style.display = 'block';
+        }
+        if (adminLink) {
+            adminLink.style.display = (currentUser.role === 'admin') ? 'block' : 'none';
         }
     } else {
-        authButton.classList.remove('hidden');
-        profileAvatar.classList.add('hidden'); // Скрываем аватар, если пользователь гость
-        adminLink.classList.add('hidden'); // Скрываем ссылку на админку
+        if (authButton) authButton.style.display = 'block';
+        if (profileAvatar) profileAvatar.style.display = 'none';
+        if (adminLink) adminLink.style.display = 'none';
     }
 }
 
-function showSection(sectionId) {
-    // Применяем анимацию скрытия
-    document.querySelectorAll('.container').forEach(section => {
-        if (section.id !== sectionId) { // Убедитесь, что скрываем только остальные секции
-            section.classList.remove('visible'); // Убираем класс видимости
-            setTimeout(() => {
-                section.style.display = 'none'; // Скрываем элемент из view после завершения анимации
-            }, 500); // Время должно совпадать с временем анимации в CSS
-        }
-    });
-
-    // Отображаем только выбранную секцию с анимацией
-    const activeSection = document.getElementById(sectionId);
-    activeSection.style.display = 'block'; // Сначала показываем, чтобы анимация могла сработать
-    setTimeout(() => {
-        activeSection.classList.add('visible'); // Добавляем класс видимости с задержкой
-    }, 0); // Немедленно добавляем класс, чтобы анимация сработала
-}
-
-// Регистрация нового пользователя
 function register() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    if (!usernameInput || !passwordInput) return;
+
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!username || !password) {
+        alert("Пожалуйста, введите имя пользователя и пароль.");
+        return;
+    }
 
     if (users.find(user => user.username === username)) {
         alert("Пользователь с таким именем уже существует.");
         return;
     }
-
-    users.push({ username, password, role: 'user' });
+    users.push({ username, password, role: 'user', registrationDate: new Date().toISOString().split('T')[0] });
+    localStorage.setItem('users', JSON.stringify(users));
     alert("Регистрация успешна! Теперь вы можете войти.");
-    document.getElementById('username').value = '';
-    document.getElementById('password').value = '';
+    usernameInput.value = '';
+    passwordInput.value = '';
 }
 
-// Авторизация пользователя
 function login() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    if (!usernameInput || !passwordInput) return;
 
-    const user = users.find(user => user.username === username && user.password === password);
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+
+    const storedUsers = JSON.parse(localStorage.getItem('users')) || [];
+    users = [...users, ...storedUsers];
+
+    const user = users.find(u => u.username === username && u.password === password);
     if (user) {
-        currentUser = user; // Сохраняем текущего пользователя
-        saveUser(); // Это вызывает ваш метод сохранения пользователя в localStorage
+        currentUser = user;
+        saveUser();
         alert("Успешный вход!");
         updateAuthButtons();
-        document.getElementById('username').value = '';
-        document.getElementById('password').value = '';
-        showSection('home'); // Переход на главную страницу после входа
+        showSection('home');
     } else {
-        alert("Неправильное имя пользователя или пароль.");
+        alert("Неправильный логин или пароль.");
     }
 }
 
-// Выход из аккаунта
 function logout() {
-    currentUser = null; // Сбрасываем текущего пользователя
-    localStorage.removeItem('currentUser'); // Удаляем данные пользователя из localStorage
+    currentUser = null;
+    localStorage.removeItem('currentUser');
     alert("Вы вышли из системы.");
     updateAuthButtons();
-    showSection('auth'); // Переход на страницу авторизации
+    showSection('auth');
 }
 
-// Инициализация
+
+// === ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ===
+
 document.addEventListener('DOMContentLoaded', () => {
-    loadUser(); // Загружаем текущего пользователя при загрузке страницы
-    loadArticles('все'); // Загружаем все статьи при инициализации
-    loadRecentArticles(); // Загружаем недавние статьи при загрузке страницы
-    loadArticlesForDiscussion(); // Загружаем статьи для обсуждения
+    console.log("DOM загружен, инициализация...");
+    loadUser();
+    showSection('home');
+});
+
+window.addEventListener('load', () => {
+    console.log("Страница полностью загружена.");
 });

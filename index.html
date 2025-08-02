@@ -9,6 +9,7 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -17,14 +18,14 @@
         </h1>
         <nav>
             <div class="main-nav">
-                <a onclick="showSection('home'); loadArticles('все')">Главная</a>
-                <a onclick="showSection('news'); loadArticles('новости')">Новости</a>
-                <a onclick="showSection('reviews'); loadArticles('обзоры')">Обзоры</a>
-                <a onclick="showSection('guides'); loadArticles('гайды')">Гайды</a>
+                <a onclick="showSection('home')">Главная</a>
+                <a onclick="showSection('news')">Новости</a>
+                <a onclick="showSection('reviews')">Обзоры</a>
+                <a onclick="showSection('guides')">Гайды</a>
                 <a onclick="showSection('community')">Сообщество</a>
             </div>
             <div class="auth-nav">
-                <a id="admin-link" class="hidden" onclick="showSection('admin')">Админка</a>
+                <a id="admin-link" style="display: none;" onclick="showSection('admin')">Админка</a>
                 <img id="profile-avatar-header" src="image/icons/Noimage.jpg" alt="Avatar" class="profile-avatar" onclick="toggleProfileMenu()" />
                 <div id="profile-menu" class="profile-menu hidden">
                     <a href="#" onclick="showSection('profile'); closeProfileMenu()">Профиль</a>
@@ -37,17 +38,25 @@
 
     <div id="home" class="container">
         <div class="main-article">
-            <a onclick="openFullArticle($,index,); return false;">
-                <div class="main-article-image-container">
-                    <img src="image/main-article-image.jpg" alt="Основная статья" class="main-article-image" />
-                    <h2 class="main-article-title">Основная статья</h2>
-                </div>
-            </a>
+            <div class="main-article-image-container">
+                <img src="image/main-article-image.jpg" alt="Основная статья" class="main-article-image" onerror="this.src='image/icons/Noimage.jpg';"/>
+                <h2 class="main-article-title">Основная статья</h2>
+                <!-- Удалена подпись под основной статьей -->
+            </div>
         </div>
 
         <div id="recent-articles-slider-content" class="recent-articles-slider-content"></div>
 
-        <div id="all-articles-content" class="articles-grid"></div>
+        <div class="content-columns">
+            <div class="left-column">
+                <h3>Материалы</h3>
+                <div id="materials-content"></div> <!-- Контейнер для материалов -->
+            </div>
+            <div class="right-column">
+                <h3>Главные релизы</h3>
+                <div id="releases-content"></div> <!-- Контейнер для релизов -->
+            </div>
+        </div>
     </div>
 
     <!-- Полная статья -->
@@ -57,11 +66,19 @@
         <button onclick="showSection('home')">Назад к статьям</button>
     </div>
 
+    <div id="full-rss-article" class="container hidden">
+        <h2 id="full-rss-article-title"></h2>
+        <p id="full-rss-article-meta"></p>
+        <div id="full-rss-article-content"></div>
+        <a id="full-rss-article-link" href="#" target="_blank" class="btn" style="margin-top: 20px;">Читать оригинал</a>
+        <button onclick="history.back()" class="btn" style="margin-top: 10px;">Назад</button>
+    </div>
+
     <!-- Остальные секции -->
     <div id="news" class="container hidden">
         <h2>Последние Новости</h2>
         <div id="news-content" class="articles-grid"></div>
-        <div id="external-news-container"></div> <!-- Новый блок -->
+        <div id="external-news-container"></div> <!-- Блок для внешних новостей -->
     </div>
 
     <div id="reviews" class="container hidden">
@@ -80,9 +97,8 @@
 
         <div id="forum-section">
             <h3>Обсуждение статей</h3>
-            <div id="articles-list"></div> <!-- Список статей для обсуждения -->
+            <div id="articles-list"></div>
         </div>
-        <div id="articles-list"></div>
     </div>
 
     <!-- Регистрация / Авторизация -->
@@ -116,16 +132,14 @@
         </div>
 
         <div id="crop-container" style="display:none;">
-
             <img id="crop-image" style="max-width: 100%; border-radius: 5px;" alt="Загруженное изображение для обрезки" />
-
             <div class="crop-buttons">
                 <button id="crop-button" onclick="cropImage()">Обрезать</button>
                 <button id="save-avatar-button" onclick="saveAvatar()">Сохранить аватар</button>
             </div>
-            
             <img id="cropped-image" alt="Результат обрезки" style="border-radius: 50%; display: none; width: 100px; height: 100px; object-fit: cover;" />
         </div>
+        <button onclick="saveProfile()">Сохранить изменения</button>
     </div>
 
     <!-- Админка -->
@@ -137,7 +151,7 @@
             </div>
             <div class="form-group">
                 <label class="file-upload">
-                    <input type="file" id="article-short-image" accept="image/*" required />
+                    <input type="file" id="article-short-image" accept="image/*" />
                     <span class="file-button">Выберите изображение</span>
                 </label>
             </div>
@@ -168,14 +182,9 @@
         <div id="existing-articles" class="articles-grid"></div>
     </div>
 
+    <!-- Подключение JavaScript библиотек -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-    <script src="script.js"></script> <!-- Подключение JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <script>
-        // Перенаправление на главную страницу при загрузке
-        window.addEventListener('load', () => {
-            showSection('home'); // Вызываем функцию для показа главной секции
-        });
-    </script>
+    <script src="script.js"></script> <!-- Подключение JavaScript -->
 </body>
 </html>
