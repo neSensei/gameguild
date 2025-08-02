@@ -1,0 +1,13 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "password": "1234",
+      "role": "admin",
+      "email": "crazyfoxy03@gmail.com",
+      "registrationDate": "2023-01-01",
+      "avatar": ""
+    }
+  ],
+  "articles": []
+}

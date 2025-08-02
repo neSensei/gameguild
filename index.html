@@ -1,0 +1,181 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игровой Портал</title>
+
+    <!-- Подключение внешних библиотек -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1 style="font-family: 'Disket Mono', monospace;">
+            <span class="letter-g">G</span>AME<span class="letter-g">G</span>UILD
+        </h1>
+        <nav>
+            <div class="main-nav">
+                <a onclick="showSection('home'); loadArticles('все')">Главная</a>
+                <a onclick="showSection('news'); loadArticles('новости')">Новости</a>
+                <a onclick="showSection('reviews'); loadArticles('обзоры')">Обзоры</a>
+                <a onclick="showSection('guides'); loadArticles('гайды')">Гайды</a>
+                <a onclick="showSection('community')">Сообщество</a>
+            </div>
+            <div class="auth-nav">
+                <a id="admin-link" class="hidden" onclick="showSection('admin')">Админка</a>
+                <img id="profile-avatar-header" src="image/icons/Noimage.jpg" alt="Avatar" class="profile-avatar" onclick="toggleProfileMenu()" />
+                <div id="profile-menu" class="profile-menu hidden">
+                    <a href="#" onclick="showSection('profile'); closeProfileMenu()">Профиль</a>
+                    <a href="#" onclick="logout(); closeProfileMenu()">Выйти</a>
+                </div>
+                <button id="auth-button" onclick="showSection('auth')">Регистрация / Авторизация</button>
+            </div>
+        </nav>
+    </header>
+
+    <div id="home" class="container">
+        <div class="main-article">
+            <a onclick="openFullArticle($,index,); return false;">
+                <div class="main-article-image-container">
+                    <img src="image/main-article-image.jpg" alt="Основная статья" class="main-article-image" />
+                    <h2 class="main-article-title">Основная статья</h2>
+                </div>
+            </a>
+        </div>
+
+        <div id="recent-articles-slider-content" class="recent-articles-slider-content"></div>
+
+        <div id="all-articles-content" class="articles-grid"></div>
+    </div>
+
+    <!-- Полная статья -->
+    <div id="full-article" class="container hidden">
+        <h2 id="full-article-title"></h2>
+        <div id="full-article-content"></div>
+        <button onclick="showSection('home')">Назад к статьям</button>
+    </div>
+
+    <!-- Остальные секции -->
+    <div id="news" class="container hidden">
+        <h2>Последние Новости</h2>
+        <div id="news-content" class="articles-grid"></div>
+        <div id="external-news-container"></div> <!-- Новый блок -->
+    </div>
+
+    <div id="reviews" class="container hidden">
+        <h2>Обзоры Игр</h2>
+        <div id="reviews-content" class="articles-grid"></div>
+    </div>
+
+    <div id="guides" class="container hidden">
+        <h2>Гайды</h2>
+        <div id="guides-content" class="articles-grid"></div>
+    </div>
+
+    <div id="community" class="container hidden">
+        <h2>Сообщество</h2>
+        <p>Присоединяйтесь к обсуждениям и делитесь своими мнениями о статьях!</p>
+
+        <div id="forum-section">
+            <h3>Обсуждение статей</h3>
+            <div id="articles-list"></div> <!-- Список статей для обсуждения -->
+        </div>
+        <div id="articles-list"></div>
+    </div>
+
+    <!-- Регистрация / Авторизация -->
+    <div id="auth" class="container hidden">
+        <h2>Регистрация / Авторизация</h2>
+        <div id="auth-form">
+            <div class="form-group">
+                <input type="text" id="username" placeholder="Имя пользователя" />
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" placeholder="Пароль" />
+            </div>
+            <button class="btn" onclick="register()">Зарегистрироваться</button>
+            <button class="btn" onclick="login()">Войти</button>
+            <p id="auth-message" class="admin-message"></p>
+        </div>
+    </div>
+
+    <!-- Профиль пользователя -->
+    <div id="profile" class="container hidden">
+        <h2>Профиль пользователя</h2>
+        <p><strong>Имя пользователя:</strong> <span id="profile-username"></span></p>
+        <p><strong>Электронная почта:</strong> <input type="email" id="profile-email" /></p>
+        <p><strong>Дата регистрации:</strong> <span id="profile-registration-date"></span></p>
+        <p><strong>Роль:</strong> <span id="profile-role"></span></p>
+
+        <div class="form-group">
+            <label for="avatar-upload">Аватар:</label>
+            <input type="file" id="avatar-upload" accept="image/*" />
+            <img id="profile-avatar-preview" src="image/icons/Noimage.jpg" alt="Avatar" style="border-radius: 50%; width: 100px; height: 100px;" />
+        </div>
+
+        <div id="crop-container" style="display:none;">
+
+            <img id="crop-image" style="max-width: 100%; border-radius: 5px;" alt="Загруженное изображение для обрезки" />
+
+            <div class="crop-buttons">
+                <button id="crop-button" onclick="cropImage()">Обрезать</button>
+                <button id="save-avatar-button" onclick="saveAvatar()">Сохранить аватар</button>
+            </div>
+            
+            <img id="cropped-image" alt="Результат обрезки" style="border-radius: 50%; display: none; width: 100px; height: 100px; object-fit: cover;" />
+        </div>
+    </div>
+
+    <!-- Админка -->
+    <div id="admin" class="container hidden">
+        <h2>Админка</h2>
+        <form onsubmit="return false;" class="admin-form">
+            <div class="form-group">
+                <input type="text" id="article-title" placeholder="Заголовок статьи" required />
+            </div>
+            <div class="form-group">
+                <label class="file-upload">
+                    <input type="file" id="article-short-image" accept="image/*" required />
+                    <span class="file-button">Выберите изображение</span>
+                </label>
+            </div>
+            <div class="form-group">
+                <select id="article-category" required>
+                    <option value="" disabled selected>Выберите категорию статьи</option>
+                    <option value="новости">Новости</option>
+                    <option value="обзоры">Обзоры</option>
+                    <option value="гайды">Гайды</option>
+                </select>
+            </div>
+            <div id="editor-container">
+                <label for="editor">Содержимое статьи:</label>
+                <div id="editor"></div>
+            </div>
+            <button type="button" class="btn" onclick="addArticle()">Добавить статью</button>
+
+            <div class="form-group">
+                <h4>Назначить главную статью:</h4>
+                <select id="main-article-selector" onchange="setMainArticle()">
+                    <option disabled selected>Выберите статью</option>
+                </select>
+            </div>
+            <div class="admin-message" id="admin-message"></div>
+        </form>
+
+        <h3>Существующие статьи</h3>
+        <div id="existing-articles" class="articles-grid"></div>
+    </div>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="script.js"></script> <!-- Подключение JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <script>
+        // Перенаправление на главную страницу при загрузке
+        window.addEventListener('load', () => {
+            showSection('home'); // Вызываем функцию для показа главной секции
+        });
+    </script>
+</body>
+</html>

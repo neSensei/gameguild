@@ -1,0 +1,314 @@
+
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Игровой Портал 2025</title>
+
+<!-- Шрифты -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+
+<!-- Подключение CSS -->
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header>
+ <h1>Игровой Портал 2025</h1>
+ <!-- Мобильное меню -->
+ <div class="menu-toggle" id="menu-toggle" aria-label="Меню">
+ <div></div>
+ <div></div>
+ <div></div>
+ </div>
+ <nav id="main-nav">
+ <a href="#home" data-section="home">Главная</a>
+ <a href="#news" data-section="news">Новости</a>
+ <a href="#reviews" data-section="reviews">Обзоры</a>
+ <a href="#guides" </a>
+ <a href="#guides" s" data-section="guides">Гайды</a>
+ <a href="#community" data-section="community">Сообщество</a>
+ </nav>
+</header>
+
+<div class="container">
+
+ <!-- Главная -->
+ <section id="home" class="section active">
+ <h2>Добро пожаловать!</h2>
+ <p>Это современный игровой портал с новостями, обзорами и сообществом.</p>
+ <div class="articles-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:1rem;">
+ <div class="article-card">
+ <h3>Последние новости</h3>
+ <p>Обновления, трейлеры и анонсы новых игр.</p>
+ <button onclick="showSection('news')">Читать подробнее</button>
+ </div>
+ <div class="article-card">
+ <h3>Обзоры игр</h3>
+ <p>Обзоры популярных и новых игр.</p>
+ <button onclick="showSection('reviews')">Читать подробнее</button>
+ </div>
+ <div class="article-card">
+ <h3>Гайды</h3>
+ <p>Советы и стратегии для игроков.</p>
+ <button onclick="showSection('guides')">Читать подробнее</button>
+ </div>
+ </div>
+ </section>
+
+ <!-- Новости -->
+ <section wSection('guides')">Читать подробнее</button>
+ </div>
+ </div>
+ </section>
+
+ <!-- Новости -->
+ <section <section n id="news" class="section">
+ <h2>Последние новости</h2>
+ <div class="articles-grid" id="news-content"></div>
+ <button onclick="showSection('home')">Назад</button>
+ </section>
+
+ <!-- Обзоры -->
+ <section id="reviews" class="section">
+ <h2>Обзоры игр</h2>
+ <div class="articles-grid" id="reviews-content"></div>
+ <button onclick="showSection('home')">Назад</button>
+ </section>
+
+ <!-- Гайды -->
+ <section id="guides" class="section">
+ <h2>Гайды</h2>
+ <div class="articles-grid" id="guides-content"></div>
+ <button onclick="showSection('home')">Назад</button>
+ </section>
+
+ <!-- Сообщество -->
+ <section id="community" class="section">
+ <h2>Сообщество</h2>
+ <p>Обсуждайте новости, делитесь мнениями и участвуйте в обсуждениях.</p>
+ <button onclick="showSection('home')">Назад</button>
+ </section>
+
+</div>
+
+<!-- Скрипты -->
+<script src="scripts.js"></script>
+
+</body>
+</html>
+
+
+
+
+  --primary-color: #4CAF50;
+  --background-color: #121212;
+  --text-color: #fff;
+  --font-family: 'Inter', sans-serif;
+  --border-radius: 8px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Заголовок и навигация */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #1f1f1f;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+header h1 {
+  font-weight: 700;
+  font-size: 1.8rem;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+nav a {
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  transition: background 0.3s, transform 0.3s;
+}
+
+nav a:hover {
+  background: rgba(255,255,255,0.1);
+  transform: scale(1.05);
+}
+
+/* Мобильное меню */
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  width: 30px;
+  height: 25px;
+  justify-content: space-between;
+}
+
+.menu-toggle div {
+  height: 3px;
+  background: #fff;
+  border-radius: 2px;
+}
+
+@media(max-width: 768px) {
+  nav {
+    display: none;
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background-color: #222;
+    flex-direction: column;
+    width: 200px;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+  }
+  nav.show {
+    display: flex;
+  }
+  .menu-toggle {
+    display: flex;
+  }
+}
+
+/* Основной контейнер */
+.container {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Разделы */
+.section {
+  display: none;
+}
+.section.active {
+  display: block;
+}
+
+/* Карточки статей */
+.article-card {
+  background: #222;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 1rem;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.article-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+/* Заголовки */
+h2 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+/* Кнопки */
+button {
+  cursor: pointer;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--primary-color);
+  color: #fff;
+  font-size: 1rem;
+  transition: background 0.3s, transform 0.2s;
+}
+button:hover {
+  background-color: #388E3C;
+  transform: translateY(-2px);
+}
+
+
+
+
+const menuToggle = document.getElementById('menu-toggle');
+const mainNav = document.getElementById('main-nav');
+
+menuToggle.addEventListener('click', () => {
+  mainNav.classList.toggle('show');
+});
+
+// Навигация по секциям
+document.querySelectorAll('nav a').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const sectionId = link.dataset.section;
+    showSection(sectionId);
+    // Закрыть меню на мобильных
+    if (mainNav.classList.contains('show')) {
+      mainNav.classList.remove('show');
+    }
+  });
+});
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(sec => {
+    sec.classList.remove('active');
+  });
+  document.getElementById(id).classList.add('active');
+}
+
+// Пример динамического наполнения новостей, обзоров, гайдов
+const newsContent = document.getElementById('news-content');
+const reviewsContent = document.getElementById('reviews-content');
+const guidesContent = document.getElementById('guides-content');
+
+const mockArticles = [
+  { title: 'Объявление о новой игре', content: 'Вышел новый трейлер...', category: 'news' },
+  { title: 'Обзор: Новая RPG', content: 'Детальный анализ...', category: 'reviews' },
+  { title: 'Гайд по выживанию', content: 'Как пройти трудные уровни...', category: 'guides' },
+];
+
+function populateArticles() {
+  mockArticles.forEach(article => {
+    const card = document.createElement('div');
+    card.className = 'article-card';
+    card.innerHTML = `
+      <h3>${article.title}</h3>
+      <p>${article.content}</p>
+      <button onclick="alert('Подробнее о ${article.title}')">Подробнее</button>
+    `;
+    if (article.category === 'news') {
+      newsContent.appendChild(card);
+    } else if (article.category === 'reviews') {
+      reviewsContent.appendChild(card);
+    } else if (article.category === 'guides') {
+      guidesContent.appendChild(card);
+    }
+  });
+}
+
+// Загрузка данных при запуске
+window.addEventListener('load', () => {
+  populateArticles();
+});
