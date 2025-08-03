@@ -37,50 +37,58 @@
     </header>
 
     <div id="home" class="container">
+        <!-- Главная статья -->
         <div class="main-article">
             <div class="main-article-image-container">
-                <img src="image/main-article-image.jpg" alt="Основная статья" class="main-article-image" onerror="this.src='image/icons/Noimage.jpg';"/>
+                <img src="image/icons/Noimage.jpg" alt="Основная статья" class="main-article-image" onerror="this.src='image/icons/Noimage.jpg';"/>
                 <h2 class="main-article-title">Основная статья</h2>
-                <!-- Удалена подпись под основной статьей -->
             </div>
         </div>
 
+        <!-- Недавние статьи -->
         <div id="recent-articles-slider-content" class="recent-articles-slider-content"></div>
 
+        <!-- Материалы и релизы -->
         <div class="content-columns">
             <div class="left-column">
                 <h3>Материалы</h3>
-                <div id="materials-content"></div> <!-- Контейнер для материалов -->
+                <div id="materials-content"></div>
             </div>
             <div class="right-column">
                 <h3>Главные релизы</h3>
-                <div id="releases-content"></div> <!-- Контейнер для релизов -->
+                <div id="releases-content"></div>
             </div>
+        </div>
+
+        <!-- Внешние новости -->
+        <div class="home-external-news-section">
+            <h3 style="color: gold; margin: 30px 0 15px; text-align: center;">🎮 Игровые новости</h3>
+            <div id="home-external-news-grid" class="articles-grid"></div>
         </div>
     </div>
 
-    <!-- Полная статья -->
-    <div id="full-article" class="container hidden">
-        <h2 id="full-article-title"></h2>
-        <div id="full-article-content"></div>
-        <button onclick="showSection('home')">Назад к статьям</button>
-    </div>
-
-    <div id="full-rss-article" class="container hidden">
-        <h2 id="full-rss-article-title"></h2>
-        <p id="full-rss-article-meta"></p>
-        <div id="full-rss-article-content"></div>
-        <a id="full-rss-article-link" href="#" target="_blank" class="btn" style="margin-top: 20px;">Читать оригинал</a>
-        <button onclick="history.back()" class="btn" style="margin-top: 10px;">Назад</button>
+    <!-- Секция новостей -->
+    <div id="news" class="container hidden">
+        <div class="news-section">
+            <h2>Игровые новости</h2>
+            <div class="news-filters">
+                <button class="filter-button active" onclick="filterNews('все')">Все</button>
+                <button class="filter-button" onclick="filterNews('pc')">PC</button>
+                <button class="filter-button" onclick="filterNews('xbox')">Xbox Series X/S</button>
+                <button class="filter-button" onclick="filterNews('ps')">PlayStation 5</button>
+                <button class="filter-button" onclick="filterNews('switch')">Nintendo Switch</button>
+                <button class="filter-button" onclick="filterNews('vr')">VR</button>
+                <!-- Добавьте другие фильтры по необходимости -->
+            </div>
+            <div id="news-content" class="news-list"></div> <!-- Сюда будут добавляться статьи -->
+        </div>
+        <div class="discussion-section">
+            <h2>Все обсуждают</h2>
+            <div id="discussion-content"></div>
+        </div>
     </div>
 
     <!-- Остальные секции -->
-    <div id="news" class="container hidden">
-        <h2>Последние Новости</h2>
-        <div id="news-content" class="articles-grid"></div>
-        <div id="external-news-container"></div> <!-- Блок для внешних новостей -->
-    </div>
-
     <div id="reviews" class="container hidden">
         <h2>Обзоры Игр</h2>
         <div id="reviews-content" class="articles-grid"></div>
@@ -94,7 +102,6 @@
     <div id="community" class="container hidden">
         <h2>Сообщество</h2>
         <p>Присоединяйтесь к обсуждениям и делитесь своими мнениями о статьях!</p>
-
         <div id="forum-section">
             <h3>Обсуждение статей</h3>
             <div id="articles-list"></div>
@@ -182,6 +189,25 @@
         <div id="existing-articles" class="articles-grid"></div>
     </div>
 
+    <!-- ПОЛНАЯ RSS СТАТЬЯ -->
+<div id="full-rss-article" class="container hidden">
+    <div style="position: relative;">
+        <!-- Кнопка "Назад" внутри контента -->
+        <button id="full-rss-article-back-button-inner" class="btn back-button">
+            ← Назад
+        </button>
+        <h1 id="full-rss-article-title" style="color: #FFD700; margin-bottom: 10px; word-wrap: break-word;"></h1>
+        <div id="full-rss-article-meta" style="color: #aaa; font-size: 0.9em; margin-bottom: 15px;"></div>
+        <div id="full-rss-article-content" style="line-height: 1.6; color: #eee;">
+            <!-- Содержимое RSS статьи будет вставлено сюда -->
+        </div>
+        <!-- Кнопка "Читать оригинал" будет создана скриптом -->
+        <!-- <a id="full-rss-article-read-original-button" class="btn" style="display:block; margin-top: 20px; background-color: #4CAF50; color: white; padding: 10px 20px; text-align: center; text-decoration: none; border-radius: 5px;" target="_blank">Читать оригинал на источнике</a> -->
+    </div>
+</div>
+<footer>
+    
+</footer>
     <!-- Подключение JavaScript библиотек -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>

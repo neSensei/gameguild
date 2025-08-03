@@ -394,50 +394,67 @@ nav {
     margin-top: 20px;
 }
 
-.article-block {
+.news-article {
     background-color: rgba(25, 25, 25, 0.9);
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     transition: transform 0.3s, box-shadow 0.3s;
-    cursor: pointer; /* Сделать кликабельной */
+    cursor: pointer;
 }
 
-.article-block:hover {
+.news-article:hover {
     transform: translateY(-5px);
     box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
 }
 
-.article-block img {
+.news-article-image img {
     width: 100%;
     height: auto;
     max-height: 150px;
     object-fit: cover;
 }
 
-.article-block:hover img {
+.news-article:hover img {
     transform: scale(1.05);
 }
 
-.article-block .article-title {
+.news-article-content {
+    padding: 15px;
+}
+
+.news-article-title {
     font-size: 1.1em;
     font-weight: bold;
-    margin: 15px;
+    margin: 0;
     color: white;
     text-align: left;
 }
 
-/* Удалены подписи под статьями */
-/* .internal-news-block .article-title {
-    font-size: 1em;
+.news-article-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8em;
+    color: #999;
+    margin-top: 5px;
 }
 
-.internal-news-block small {
-    display: block;
-    margin: 0 15px 15px 15px;
-    color: #aaa;
-    font-size: 0.85em;
-} */
+.news-article-tags {
+    margin-top: 5px;
+}
+
+.tag {
+    background-color: #4CAF50;
+    color: white;
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 0.75em;
+    margin-right: 5px;
+}
+
+.rss-tag {
+    background-color: #FFD700; /* Золотой цвет для RSS */
+}
 
 /* === ПОЛНАЯ СТАТЬЯ === */
 #full-article {
@@ -452,28 +469,75 @@ nav {
     color: #FFD700;
     line-height: 1.2;
     hyphens: auto;
+}
+
+#full-article-back-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#full-article-back-button:hover {
+    background-color: #4CAF50;
+}
+
+#full-article-read-more-button {
+    display: block;
+    margin-top: 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#full-article-read-more-button:hover {
+    background-color: #4CAF50;
+}
+/* === ПОЛНАЯ СТАТЬЯ === */
+#full-rss-article {
+    text-align: left;
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 30px;
+}
+
+#full-rss-article-title {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    color: #FFD700;
+    line-height: 1.2;
+    hyphens: auto;
     overflow-wrap: break-word;
 }
 
-#full-article-content {
+#full-rss-article-content {
     font-size: 1.1em;
     line-height: 1.6;
     color: #eee;
 }
 
-#full-article-content img {
+#full-rss-article-content img {
     max-width: 100%;
     height: auto;
     border-radius: 8px;
     margin: 15px 0;
 }
 
-#full-article-content a {
+#full-rss-article-content a {
     color: #FFD700;
     text-decoration: underline;
 }
 
-#full-article button {
+#full-rss-article button {
     margin-top: 20px;
     padding: 10px 20px;
     background-color: #333;
@@ -484,8 +548,30 @@ nav {
     transition: background-color 0.3s;
 }
 
-#full-article button:hover {
+#full-rss-article button:hover {
     background-color: #555;
+}
+
+
+
+/* Стили для кнопки "Назад" */
+.back-button {
+    position: sticky;
+    top: 20px;
+    left: 20px;
+    z-index: 1001;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 1em;
+}
+
+.back-button:hover {
+    background-color: #4CAF50;
 }
 
 /* === АДМИНКА === */
