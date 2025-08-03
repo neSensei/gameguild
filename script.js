@@ -49,7 +49,6 @@ function loadUser() {
     }
     updateAuthButtons();
 }
-
 function updateProfileDisplay() {
     if (document.getElementById('profile-username')) {
         document.getElementById('profile-username').innerText = currentUser.username;
@@ -71,50 +70,49 @@ function updateProfileDisplay() {
         document.getElementById('profile-avatar-preview').src = avatarSrc;
     }
 }
-
 // === СТАТЬИ ===
 function loadArticles(filteredCategory = 'все') {
     console.log(`Загрузка статей категории: ${filteredCategory}`);
-
     const allArticlesContentDiv = document.getElementById('all-articles-content');
     const newsContentDiv = document.getElementById('news-content');
     const reviewsContentDiv = document.getElementById('reviews-content');
     const guidesContentDiv = document.getElementById('guides-content');
     const existingArticlesDiv = document.getElementById('existing-articles');
-    const mainArticleSelector = document.getElementById('main-article-selector');
+    const mainArticleSelector = document.getElementById('main-article-selector'); // Получаем select
     const homeExternalNewsGrid = document.getElementById('home-external-news-grid'); // Для главной страницы
-
     if (allArticlesContentDiv) allArticlesContentDiv.innerHTML = '';
     if (newsContentDiv) newsContentDiv.innerHTML = '';
     if (reviewsContentDiv) reviewsContentDiv.innerHTML = '';
     if (guidesContentDiv) guidesContentDiv.innerHTML = '';
+    // --- ИСПРАВЛЕНО: Очищаем select перед заполнением ---
     if (mainArticleSelector) {
-        mainArticleSelector.innerHTML = '<option disabled selected>Выберите статью</option>';
+        mainArticleSelector.innerHTML = '<option value="-1" disabled selected>Выберите статью</option>';
     }
-
+    // --- Загрузка статей из localStorage ---
     const storedArticles = JSON.parse(localStorage.getItem('articles')) || [];
     articles = storedArticles;
     articles.sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
-
-    articles.forEach((article, index) => {
-        const { title, shortImage, category, publishDate } = article;
-
-        if (mainArticleSelector) {
+    // --- ИСПРАВЛЕНО: Заполнение select внутри loadArticles ---
+    if (mainArticleSelector) {
+        articles.forEach((article, index) => {
             const option = document.createElement('option');
-            option.value = index;
-            option.textContent = title;
+            option.value = index; // value = индекс
+            option.textContent = `${article.title} (${article.category})`;
             // Отмечаем текущую главную статью
-            if (mainArticleIndex === index) {
+            const storedMainIndex = localStorage.getItem('mainArticleIndex');
+            if (storedMainIndex !== null && parseInt(storedMainIndex, 10) === index) {
                 option.selected = true;
             }
             mainArticleSelector.appendChild(option);
-        }
-
+        });
+    }
+    // --- Отображение статей в соответствующих разделах ---
+    articles.forEach((article, index) => {
+        const { title, shortImage, category, publishDate } = article;
         if ((filteredCategory === 'все' || article.category === filteredCategory) && allArticlesContentDiv) {
             const articleBlock = createArticleBlock(article, index);
             allArticlesContentDiv.appendChild(articleBlock);
         }
-
         if (category === 'новости' && newsContentDiv) {
             const articleBlock = createArticleBlock(article, index);
             newsContentDiv.appendChild(articleBlock);
@@ -126,7 +124,7 @@ function loadArticles(filteredCategory = 'все') {
             guidesContentDiv.appendChild(articleBlock);
         }
     });
-
+    // --- Отображение статей в админке ---
     if (existingArticlesDiv) {
         existingArticlesDiv.innerHTML = '';
         articles.forEach((article, index) => {
@@ -138,12 +136,12 @@ function loadArticles(filteredCategory = 'все') {
                 <div>
                     <button onclick="editArticle(${index})">Редактировать</button>
                     <button onclick="deleteArticle(${index})">Удалить</button>
-                    <button onclick="setMainArticle(${index})" style="background-color: #4CAF50;">${mainArticleIndex === index ? 'Главная' : 'Сделать главной'}</button>
+                    <button onclick="setMainArticle(${index})" style="background-color: #4CAF50;">${localStorage.getItem('mainArticleIndex') == index ? 'Главная' : 'Сделать главной'}</button>
                 </div>
             `;
             existingArticlesDiv.appendChild(articleDiv);
         });
-
+        // Отображение RSS статей в админке (если они есть и фильтр "все" или "новости")
         if (existingArticlesDiv && (filteredCategory === 'все' || filteredCategory === 'новости')) {
             externalNews
                 .filter(item => item && item.title && item.link && !hiddenRssArticles.includes(item.link))
@@ -155,17 +153,15 @@ function loadArticles(filteredCategory = 'все') {
                 });
         }
     }
-
     // Всегда отображаем внешние новости на главной, если контейнер существует
     if (homeExternalNewsGrid) {
         renderHomeExternalNews();
     }
-
+    // Загрузка других компонентов главной страницы
     loadRecentArticles();
     loadMaterialsAndReleases();
-    loadMainArticle(); // Обновляем главную статью
+    // loadMainArticle(); // Не вызываем напрямую, пусть showSection('home') -> loadHomeContent делает это
 }
-
 // Вспомогательная функция для создания блока внутренней статьи
 function createArticleBlock(article, index) {
     const articleBlock = document.createElement('div');
@@ -177,14 +173,12 @@ function createArticleBlock(article, index) {
     `;
     return articleBlock;
 }
-
 // Вспомогательная функция для создания блока RSS статьи в админке
 function createRssArticleBlock(rssArticle) {
     const articleDiv = document.createElement('div');
     articleDiv.className = 'existing-article';
     const pubDate = rssArticle.pubDate ? new Date(rssArticle.pubDate).toLocaleDateString('ru-RU') : 'Дата не указана';
     const isMain = mainRssArticleLink === rssArticle.link;
-
     articleDiv.style = `border-left: 3px solid ${isMain ? 'green' : 'gold'};`;
     articleDiv.innerHTML = `
         <h4 style="color: ${isMain ? 'green' : 'gold'};">${rssArticle.title}</h4>
@@ -193,7 +187,6 @@ function createRssArticleBlock(rssArticle) {
             ${isMain ? '<span style="color: #4CAF50; font-weight: bold;">Главная RSS</span>' : ''}
         </div>
     `;
-
     const openButton = document.createElement('button');
     openButton.textContent = 'Открыть';
     openButton.style.backgroundColor = '#2196F3';
@@ -201,7 +194,6 @@ function createRssArticleBlock(rssArticle) {
         e.stopPropagation();
         openFullRssArticle(rssArticle);
     };
-
     const hideButton = document.createElement('button');
     hideButton.textContent = 'Скрыть';
     hideButton.style.backgroundColor = '#f44336';
@@ -209,7 +201,6 @@ function createRssArticleBlock(rssArticle) {
         e.stopPropagation();
         hideRssArticle(rssArticle.link);
     };
-
     const setMainButton = document.createElement('button');
     setMainButton.textContent = isMain ? 'Главная' : 'Сделать главной';
     setMainButton.style.backgroundColor = '#4CAF50';
@@ -218,33 +209,304 @@ function createRssArticleBlock(rssArticle) {
         let imageUrlForMain = rssArticle.imageUrl || 'image/icons/Noimage.jpg';
         setMainRssArticle(rssArticle.link, rssArticle.title.replace(/'/g, "\\'"), imageUrlForMain);
     };
-
     const buttonDiv = articleDiv.querySelector('div');
     buttonDiv.appendChild(openButton);
     buttonDiv.appendChild(hideButton);
     buttonDiv.appendChild(setMainButton);
-
     return articleDiv;
 }
+// === ФУНКЦИЯ ЗАГРУЗКИ СТАТЕЙ НА ГЛАВНУЮ СТРАНИЦУ ===
+// Эта функция должна заменить вашу текущую loadHomeContent
+function loadHomeContent() {
+    console.log("Загрузка контента для главной страницы (новая версия)...");
+    // 1. Загрузка ГЛАВНОЙ СТАТЬИ
+    loadMainArticleForHome();
+    // 2. Загрузка СЛАЙДЕРА НЕДАВНИХ СТАТЕЙ
+    loadRecentArticles();
+    // 3. Загрузка НОВОГО БЛОКА: ГЛАВНЫЕ СТАТЬИ
+    loadMainArticlesForHome();
+    // 4. Загрузка МАТЕРИАЛОВ и РЕЛИЗОВ
+    loadMaterialsAndReleases();
+    // 5. Загрузка СПИСКА ВСЕХ СТАТЕЙ
+    loadAllArticlesList();
+}
+// === АДАПТИРОВАННАЯ ФУНКЦИЯ ДЛЯ ГЛАВНОЙ СТАТЬИ НА ГЛАВНОЙ СТРАНИЦЕ ===
+function loadMainArticleForHome() {
+    const mainArticleElement = document.querySelector('.main-article');
+    if (!mainArticleElement) {
+        console.warn("Элемент .main-article не найден на странице.");
+        return;
+    }
+    const storedMainIndex = localStorage.getItem('mainArticleIndex');
+    const storedRssLink = localStorage.getItem('mainRssArticleLink');
+    let mainArticleData = null;
+    let mainArticleType = null;
+    // Приоритет 1: Главная внутренняя статья
+    if (storedMainIndex !== null) {
+        const index = parseInt(storedMainIndex, 10);
+        if (!isNaN(index) && articles[index]) {
+            mainArticleData = articles[index];
+            mainArticleType = 'internal';
+        }
+    }
+    // Приоритет 2: Главная RSS-новость
+    else if (storedRssLink) {
+        const rssArticle = externalNews.find(item => item.link === storedRssLink);
+        if (rssArticle) {
+            mainArticleData = rssArticle;
+            mainArticleType = 'rss';
+        } else {
+            // Если статья не найдена, но ссылка есть, создаем минимальный объект
+            mainArticleData = {
+                title: localStorage.getItem('mainRssArticleTitle') || 'Назначенная RSS-новость',
+                link: storedRssLink,
+                image: localStorage.getItem('mainRssArticleThumbnail') || 'image/icons/Noimage.jpg',
+                imageUrl: localStorage.getItem('mainRssArticleThumbnail') || 'image/icons/Noimage.jpg',
+                contentSnippet: 'Эта RSS-новость была назначена главной.',
+                pubDate: new Date().toISOString()
+            };
+            mainArticleType = 'rss';
+        }
+    }
+    // Приоритет 3: Первая доступная статья
+    else {
+        if (articles.length > 0) {
+            mainArticleData = articles[0];
+            mainArticleType = 'internal';
+        } else if (externalNews.length > 0) {
+            mainArticleData = externalNews[0];
+            mainArticleType = 'rss';
+        }
+    }
+    if (mainArticleData) {
+        const title = mainArticleData.title || 'Без названия';
+        // Поддержка обоих полей для изображения
+        const image = mainArticleData.image || mainArticleData.imageUrl || 'image/icons/Noimage.jpg';
+        const description = sanitizeHTML(mainArticleData.description || mainArticleData.contentSnippet || 'Описание отсутствует.');
+        const pubDate = mainArticleData.pubDate || mainArticleData.date || new Date().toISOString();
+        const formattedDate = formatDate(pubDate);
+        // Генерация тегов
+        let tagsHtml = '';
+        if (mainArticleData.tags && Array.isArray(mainArticleData.tags)) {
+            tagsHtml = mainArticleData.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+        } else if (mainArticleType === 'rss') {
+            tagsHtml = '<span class="tag rss-tag">RSS</span>';
+        } else {
+            tagsHtml = '<span class="tag">Без категории</span>';
+        }
+        mainArticleElement.innerHTML = `
+            <img src="${image}" alt="${sanitizeHTML(title)}" class="main-article-image" onerror="this.src='image/icons/Noimage.jpg';"/>
+            <div class="main-article-content">
+                <h2 class="main-article-title">${sanitizeHTML(title)}</h2>
+                <p class="main-article-excerpt">${description}</p>
+                <div class="main-article-meta">
+                    <span>📅 <time datetime="${pubDate}">${formattedDate}</time></span>
+                    <span>💬 0</span>
+                </div>
+                <div class="main-article-tags">
+                    ${tagsHtml}
+                </div>
+            </div>
+        `;
+        // Добавляем обработчик клика
+        mainArticleElement.onclick = function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            console.log(`Клик по основной статье типа ${mainArticleType}:`, title);
+            if (mainArticleType === 'internal') {
+                const index = articles.findIndex(a => a === mainArticleData);
+                if (index !== -1) {
+                    openFullArticle(index);
+                } else {
+                    console.error("Индекс внутренней статьи не найден:", mainArticleData);
+                }
+            } else {
+                openFullRssArticle(mainArticleData);
+            }
+        };
+    } else {
+        // Если статей нет
+        mainArticleElement.innerHTML = `
+            <img src="image/icons/Noimage.jpg" alt="Нет статьи" class="main-article-image" onerror="this.src='image/icons/Noimage.jpg';"/>
+            <div class="main-article-content">
+                <h2 class="main-article-title">Статьи не найдены</h2>
+                <p class="main-article-excerpt">Пока нет доступных статей для отображения здесь.</p>
+                <div class="main-article-meta">
+                    <span>📅 <time datetime="${new Date().toISOString()}">${formatDate(new Date())}</time></span>
+                    <span>💬 0</span>
+                </div>
+                <div class="main-article-tags">
+                    <span class="tag">Новости</span>
+                </div>
+            </div>
+        `;
+    }
+}
+// === НОВАЯ ФУНКЦИЯ: ЗАГРУЗКА ГЛАВНЫХ СТАТЕЙ НА ГЛАВНУЮ ===
+function loadMainArticlesForHome() {
+    const mainArticlesGrid = document.getElementById('home-main-articles-grid');
+    if (!mainArticlesGrid) {
+        console.warn("Элемент #home-main-articles-grid не найден на странице.");
+        return;
+    }
+    mainArticlesGrid.innerHTML = '';
 
+    const mainArticles = [];
 
+    // Добавляем внутреннюю главную статью
+    const storedMainIndex = localStorage.getItem('mainArticleIndex');
+    if (storedMainIndex !== null) {
+        const index = parseInt(storedMainIndex, 10);
+        if (!isNaN(index) && articles[index]) {
+            mainArticles.push({ ...articles[index], _type: 'internal' });
+        }
+    }
+
+    // Добавляем RSS главную статью
+    const storedRssLink = localStorage.getItem('mainRssArticleLink');
+    if (storedRssLink) {
+        const rssArticle = externalNews.find(item => item.link === storedRssLink);
+        if (rssArticle) {
+            mainArticles.push({ ...rssArticle, _type: 'rss' });
+        } else {
+            // Если статья не найдена, но ссылка есть, создаем минимальный объект
+            mainArticles.push({
+                title: localStorage.getItem('mainRssArticleTitle') || 'Назначенная RSS-новость',
+                link: storedRssLink,
+                imageUrl: localStorage.getItem('mainRssArticleThumbnail') || 'image/icons/Noimage.jpg',
+                description: 'Эта RSS-новость была назначена главной.',
+                pubDate: new Date().toISOString(),
+                _type: 'rss'
+            });
+        }
+    }
+
+    // Добавляем еще несколько недавних статей (до 4), если главных не хватает
+    const allArticlesCombined = [...articles.map(a => ({ ...a, _type: 'internal' })), ...externalNews.map(n => ({ ...n, _type: 'rss' }))];
+    allArticlesCombined.sort((a, b) => new Date(b.pubDate || b.date) - new Date(a.pubDate || a.date));
+
+    while (mainArticles.length < 4 && allArticlesCombined.length > 0) {
+        const candidate = allArticlesCombined.shift();
+        // Проверяем, не добавлена ли уже
+        const isAlreadyAdded = mainArticles.some(ma =>
+            (ma._type === 'internal' && candidate._type === 'internal' && articles.findIndex(a => a === candidate) === articles.findIndex(a => a === ma)) ||
+            (ma._type === 'rss' && candidate._type === 'rss' && ma.link === candidate.link)
+        );
+        if (!isAlreadyAdded) {
+            mainArticles.push(candidate);
+        }
+    }
+
+    if (mainArticles.length === 0) {
+        mainArticlesGrid.innerHTML = '<p>Главные статьи не найдены.</p>';
+        return;
+    }
+
+    mainArticles.forEach((articleData, index) => {
+        const articleCard = document.createElement('div');
+        articleCard.className = 'main-article-card'; // Используем новый класс для стилей
+        articleCard.style.opacity = '0'; // Для анимации
+
+        const imageUrl = articleData.shortImage || articleData.imageUrl || 'image/icons/Noimage.jpg';
+        const title = articleData.title || 'Без названия';
+        const description = (articleData.description || articleData.contentSnippet || 'Описание отсутствует.').replace(/<[^>]*>/g, '').substring(0, 100) + '...';
+        const pubDate = articleData.pubDate || articleData.date || new Date().toISOString();
+        const formattedDate = formatDate(pubDate);
+        const typeTag = articleData._type === 'rss' ? '<span class="tag rss-tag">RSS</span>' : '<span class="tag">Статья</span>';
+
+        articleCard.innerHTML = `
+            <img src="${imageUrl}" alt="${sanitizeHTML(title)}" onerror="this.src='image/icons/Noimage.jpg';" />
+            <div class="article-content">
+                <h4 class="article-title">${sanitizeHTML(title)}</h4>
+                <div class="article-meta">
+                    <span>📅 ${formattedDate}</span>
+                    <span>💬 0</span>
+                </div>
+                <p class="article-excerpt">${description}</p>
+                <div class="article-tags">
+                    ${typeTag}
+                </div>
+            </div>
+        `;
+
+        articleCard.addEventListener('click', function (event) {
+            event.stopPropagation();
+            event.preventDefault();
+            if (articleData._type === 'internal') {
+                const index = articles.findIndex(a => a === articleData);
+                if (index !== -1) {
+                    openFullArticle(index);
+                } else {
+                    console.error("Индекс внутренней статьи не найден для главной карточки:", articleData);
+                }
+            } else {
+                openFullRssArticle(articleData);
+            }
+        });
+
+        mainArticlesGrid.appendChild(articleCard);
+
+        // Задержка для анимации появления
+        setTimeout(() => {
+            articleCard.style.opacity = '1';
+        }, 50 * index); // Небольшая задержка между карточками
+    });
+}
+// === ФУНКЦИЯ ЗАГРУЗКИ СПИСКА ВСЕХ СТАТЕЙ ===
+function loadAllArticlesList() {
+    const allArticlesList = document.getElementById('all-articles-list');
+    if (!allArticlesList) {
+        console.warn("Элемент #all-articles-list не найден на странице.");
+        return;
+    }
+    allArticlesList.innerHTML = '';
+    // Объединяем все статьи и сортируем по дате
+    const allArticles = [...articles, ...externalNews]
+        .map((item, index) => ({
+            ...item,
+            _originalIndex: index,
+            _isRss: !item.content // Предположение: у RSS нет поля content
+        }))
+        .sort((a, b) => {
+            const dateA = new Date(a.pubDate || a.date || 0);
+            const dateB = new Date(b.pubDate || b.date || 0);
+            return dateB - dateA; // Новые первыми
+        });
+    if (allArticles.length === 0) {
+        allArticlesList.innerHTML = '<p>Статей пока нет.</p>';
+        return;
+    }
+    allArticles.forEach((articleData) => {
+        const articleDiv = createArticleCard(articleData, articleData._isRss ? 'rss' : 'internal');
+        // Убираем лишние стили, если они есть (от createArticleCard)
+        articleDiv.style.maxWidth = 'none';
+        articleDiv.style.margin = '0 0 15px 0';
+        allArticlesList.appendChild(articleDiv);
+    });
+}
+// === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ФОРМАТИРОВАНИЯ ДАТ ===
+function formatDate(dateString) {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const date = new Date(dateString);
+    return isNaN(date) ? 'Недавно' : date.toLocaleDateString('ru-RU', options);
+}
+function formatDateShort(dateString) {
+    const options = { day: '2-digit', month: '2-digit', year: '2-digit' };
+    const date = new Date(dateString);
+    return isNaN(date) ? '--.--.--' : date.toLocaleDateString('ru-RU', options).replace(/\./g, '.');
+}
 // === ФИЛЬТРЫ НОВОСТЕЙ ===
 function filterNews(platform) {
     const newsList = document.getElementById('news-content');
     if (!newsList) return;
-
     newsList.innerHTML = '';
-
     // Отображаем внутренние новости
     const internalNews = articles.filter(article => article.category === 'новости');
-
     // Отображаем внешние новости
     const externalNewsToShow = externalNews.filter(item =>
         item && item.title && item.link && !hiddenRssArticles.includes(item.link)
     );
-
     let articlesToShow = [];
-
     if (platform === 'все') {
         // Сначала внутренние, потом внешние
         articlesToShow = [...internalNews.map(a => ({ ...a, type: 'internal' })), ...externalNewsToShow.map(a => ({ ...a, type: 'rss' }))];
@@ -257,13 +519,11 @@ function filterNews(platform) {
         newsList.appendChild(messageDiv);
         articlesToShow = [...internalNews.map(a => ({ ...a, type: 'internal' })), ...externalNewsToShow.map(a => ({ ...a, type: 'rss' }))];
     }
-
     // Создаем и добавляем карточки, используя ЕДИНУЮ функцию createNewsCard
     articlesToShow.forEach(article => {
         const articleCard = createNewsCard(article, article.type);
         newsList.appendChild(articleCard);
     });
-
     // Обновляем активную кнопку фильтра
     document.querySelectorAll('.filter-button').forEach(btn => {
         btn.classList.remove('active');
@@ -272,14 +532,11 @@ function filterNews(platform) {
         }
     });
 }
-
 // --- Создание карточки новости для секции "Новости" ---
 function createNewsCard(articleData, type) {
     const articleDiv = document.createElement('div');
     articleDiv.className = 'news-article'; // Используем класс из CSS
-
     let imageUrl, title, dateText, tagsHtml, description = '';
-
     if (type === 'internal') {
         imageUrl = articleData.shortImage || 'image/icons/Noimage.jpg';
         title = articleData.title;
@@ -293,7 +550,6 @@ function createNewsCard(articleData, type) {
         tagsHtml = '<span class="tag rss-tag">RSS</span>';
         description = (articleData.description || '').replace(/<[^>]*>/g, '').substring(0, 150) + '...';
     }
-
     articleDiv.innerHTML = `
         <div class="news-article-image">
             <img src="${imageUrl}" alt="${title}" onerror="this.src='image/icons/Noimage.jpg';">
@@ -310,7 +566,6 @@ function createNewsCard(articleData, type) {
             </div>
         </div>
     `;
-
     // --- КРИТИЧЕСКОЕ ИЗМЕНЕНИЕ ---
     // Используем addEventListener и ВСЕГДА отменяем стандартное поведение и всплытие
     articleDiv.addEventListener('click', function (event) {
@@ -318,9 +573,7 @@ function createNewsCard(articleData, type) {
         event.stopPropagation();
         // Отменяем стандартное поведение (например, если клик был по ссылке внутри)
         event.preventDefault();
-
         console.log(`Клик по статье типа ${type}:`, title); // Для отладки
-
         if (type === 'internal') {
             const index = articles.findIndex(a => a === articleData);
             if (index !== -1) {
@@ -332,7 +585,6 @@ function createNewsCard(articleData, type) {
             openFullRssArticle(articleData); // Открываем RSS-статью на вашем сайте
         }
     });
-
     // Дополнительная мера: отменить клики на всех дочерних элементах <a> и <img>
     // которые могут иметь свои обработчики или стандартное поведение
     const linksAndImages = articleDiv.querySelectorAll('a, img');
@@ -346,11 +598,9 @@ function createNewsCard(articleData, type) {
         });
     });
     // --- КОНЕЦ КРИТИЧЕСКОГО ИЗМЕНЕНИЯ ---
-
     return articleDiv;
 }
 // --- КОНЕЦ создания карточки ---
-
 // === НЕДАВНИЕ СТАТЬИ (СЛАЙДЕР) ===
 function loadRecentArticles() {
     const recentArticlesSliderContent = document.getElementById('recent-articles-slider-content');
@@ -360,6 +610,7 @@ function loadRecentArticles() {
     recentArticles.forEach((article, index) => {
         const articleBlock = document.createElement('div');
         articleBlock.className = 'recent-article-block';
+        articleBlock.style.opacity = '0'; // Для анимации
         articleBlock.onclick = () => openFullArticle(articles.findIndex(a => a === article)); // Ищем правильный индекс
         articleBlock.innerHTML = `
             <img src="${article.shortImage || 'image/icons/Noimage.jpg'}" alt="${article.title}" class="recent-article-image" onerror="this.src='image/icons/Noimage.jpg';">
@@ -368,128 +619,141 @@ function loadRecentArticles() {
             </div>
         `;
         recentArticlesSliderContent.appendChild(articleBlock);
+
+         // Задержка для анимации появления
+         setTimeout(() => {
+            articleBlock.style.opacity = '1';
+        }, 100 * index); // Небольшая задержка между карточками
     });
 }
-
 // === МАТЕРИАЛЫ И РЕЛИЗЫ (КОЛОНКИ) ===
 function loadMaterialsAndReleases() {
-    const materialsContent = document.getElementById('materials-content');
-    const releasesContent = document.getElementById('releases-content');
+    const materialsContent = document.getElementById('materials-content'); // Не используется в текущем HTML
+    const releasesContent = document.getElementById('releases-content'); // Не используется в текущем HTML
+    const homeExternalNewsGrid = document.getElementById('home-external-news-grid');
+    const homeReleasesGrid = document.getElementById('home-releases-grid');
 
-    if (materialsContent) materialsContent.innerHTML = '';
-    if (releasesContent) releasesContent.innerHTML = '';
+    if (homeExternalNewsGrid) homeExternalNewsGrid.innerHTML = '';
+    if (homeReleasesGrid) homeReleasesGrid.innerHTML = '';
 
-    // Материалы - последние 3 новости
-    const materials = articles
-        .filter(a => a.category === 'новости')
-        .sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate))
+    // Материалы - последние 3 новости (внешние)
+    const materials = externalNews
+        .filter(item => item && item.title && item.link && !hiddenRssArticles.includes(item.link))
+        .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))
         .slice(0, 3);
 
-    // Релизы - последние 3 обзора
+    // Релизы - последние 3 обзора (внутренние)
     const releases = articles
         .filter(a => a.category === 'обзоры')
         .sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate))
         .slice(0, 3);
 
     // Отображаем материалы
-    if (materialsContent) {
+    if (homeExternalNewsGrid) {
         materials.forEach((article, index) => {
             const materialCard = document.createElement('div');
-            materialCard.className = 'material-card';
-            materialCard.onclick = () => openFullArticle(articles.findIndex(a => a === article));
+            materialCard.className = 'article-block'; // Используем общий класс
+            materialCard.onclick = () => openFullRssArticle(article);
+            let imageUrl = article.imageUrl || 'image/icons/Noimage.jpg';
+            let description = '';
+            if (article.description) {
+                description = article.description.replace(/<[^>]*>/g, '').slice(0, 90) + '...';
+            }
             materialCard.innerHTML = `
-                <img src="${article.shortImage || 'image/icons/Noimage.jpg'}" alt="${article.title}" class="material-image" onerror="this.src='image/icons/Noimage.jpg';">
-                <div class="material-details">
-                    <h4>${article.title}</h4>
+                <div style="height: 100%; display: flex; flex-direction: column;">
+                    <img src="${imageUrl}"
+                         alt="${article.title}"
+                         onerror="this.src='image/icons/Noimage.jpg';"
+                         style="width: 100%; height: 150px; object-fit: cover; flex-shrink: 0;">
+                    <div style="padding: 10px; flex-grow: 1; display: flex; flex-direction: column;">
+                        <div style="font-weight: bold; color: #fff; font-size: 0.95em; margin-bottom: 5px; flex-grow: 1;">${article.title}</div>
+                        ${article.pubDate ? `<small style="color: #aaa; display: block; margin-bottom: 5px;">${new Date(article.pubDate).toLocaleDateString('ru-RU')}</small>` : ''}
+                        <p style="color: #ccc; font-size: 0.85em; margin: 0 0 10px 0; flex-grow: 1;">
+                            ${description}
+                        </p>
+                        <div style="margin-top: auto;">
+                            <span style="background-color: #4CAF50; color: white; padding: 3px 6px; border-radius: 3px; font-size: 0.75em;">RSS</span>
+                        </div>
+                    </div>
                 </div>
             `;
-            materialsContent.appendChild(materialCard);
+            homeExternalNewsGrid.appendChild(materialCard);
         });
     }
 
     // Отображаем релизы
-    if (releasesContent) {
+    if (homeReleasesGrid) {
         releases.forEach((article, index) => {
             const releaseCard = document.createElement('div');
-            releaseCard.className = 'release-card';
+            releaseCard.className = 'article-block'; // Используем общий класс
             releaseCard.onclick = () => openFullArticle(articles.findIndex(a => a === article));
             releaseCard.innerHTML = `
-                <img src="${article.shortImage || 'image/icons/Noimage.jpg'}" alt="${article.title}" class="release-image" onerror="this.src='image/icons/Noimage.jpg';">
-                <div class="release-details">
-                    <h4>${article.title}</h4>
+                <img src="${article.shortImage || 'image/icons/Noimage.jpg'}" alt="${article.title}" class="release-image" onerror="this.src='image/icons/Noimage.jpg';" style="width: 100%; height: 150px; object-fit: cover;">
+                <div class="release-details" style="padding: 10px;">
+                    <h4 style="margin: 0 0 5px 0; color: #fff; font-size: 0.95em;">${article.title}</h4>
+                    <small style="color: #aaa;">${new Date(article.publishDate).toLocaleDateString('ru-RU')}</small>
                 </div>
             `;
-            releasesContent.appendChild(releaseCard);
+            homeReleasesGrid.appendChild(releaseCard);
         });
     }
 }
-
 // === УПРАВЛЕНИЕ RSS СТАТЬЯМИ (ФУНКЦИИ) ===
 function hideRssArticle(link) {
     if (!hiddenRssArticles.includes(link)) {
         hiddenRssArticles.push(link);
         localStorage.setItem('hiddenRssArticles', JSON.stringify(hiddenRssArticles));
-
         // Если скрыта главная RSS-статья, сбрасываем её
         if (mainRssArticleLink === link) {
             mainRssArticleLink = null;
             localStorage.removeItem('mainRssArticleLink');
             localStorage.removeItem('mainRssArticleTitle');
             localStorage.removeItem('mainRssArticleThumbnail');
-            loadMainArticle();
+            loadMainArticle(); // Перезагружаем отображение главной статьи
         }
-
         loadArticles(getCurrentCategory());
         alert("Новость скрыта.");
     }
 }
-
 function setMainRssArticle(link, title, thumbnail) {
     mainRssArticleLink = link;
     localStorage.setItem('mainRssArticleLink', link);
     localStorage.setItem('mainRssArticleTitle', title);
-
-    // Используем imageUrl из найденной статьи
-    const rssArticle = externalNews.find(item => item.link === link);
-    let imageUrlForMain = 'image/icons/Noimage.jpg';
-    if (rssArticle) {
-        imageUrlForMain = rssArticle.imageUrl || imageUrlForMain;
+    localStorage.setItem('mainRssArticleThumbnail', thumbnail);
+    // Сбрасываем главную внутреннюю статью, если была установлена
+    if (localStorage.getItem('mainArticleIndex') !== null) {
+        localStorage.removeItem('mainArticleIndex');
+        mainArticleIndex = null; // Обновляем глобальную переменную
     }
-    localStorage.setItem('mainRssArticleThumbnail', imageUrlForMain);
-
-    loadMainArticle();
+    loadMainArticle(); // Перезагружаем отображение главной статьи
     loadArticles(getCurrentCategory());
-    alert(`Новость "${title}" назначена главной.`);
+    // Если мы на главной странице, перезагружаем её контент
+    if (currentSection === 'home') {
+        loadHomeContent();
+    }
+    alert(`RSS-новость "${title}" назначена главной.`);
 }
-
 // === ВНЕШНИЕ НОВОСТИ ИЗ RSS ===
 function appendNewsToContainer(newsList, container, count) {
     if (!container) return;
-
     container.innerHTML = '';
-
     const filteredNews = newsList.filter(item =>
         item && item.title && item.link && !hiddenRssArticles.includes(item.link)
     );
-
     const sortedNews = [...filteredNews]
         .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))
         .slice(0, count);
-
     sortedNews.forEach(article => {
         const displayDate = article.pubDate ? new Date(article.pubDate).toLocaleDateString('ru-RU') : '';
         const title = article.title.length > 70 ? article.title.slice(0, 70) + '...' : article.title;
-
         const articleDiv = document.createElement('div');
         articleDiv.className = 'article-block'; // Используем общий класс для стилей
         articleDiv.onclick = () => openFullRssArticle(article);
-
         let imageUrl = article.imageUrl || 'image/icons/Noimage.jpg';
         let description = '';
         if (article.description) {
             description = article.description.replace(/<[^>]*>/g, '').slice(0, 90) + '...';
         }
-
         articleDiv.innerHTML = `
             <div style="height: 100%; display: flex; flex-direction: column;">
                 <img src="${imageUrl}"
@@ -508,15 +772,12 @@ function appendNewsToContainer(newsList, container, count) {
                 </div>
             </div>
         `;
-
         container.appendChild(articleDiv);
     });
 }
-
 function renderExternalNews() {
     const containerNews = document.getElementById('external-news-container');
     const homeGrid = document.getElementById('home-external-news-grid');
-
     if (containerNews) {
         let externalNewsGrid = document.getElementById('external-news-grid');
         if (!externalNewsGrid) {
@@ -528,12 +789,10 @@ function renderExternalNews() {
         }
         appendNewsToContainer(externalNews, externalNewsGrid, 6);
     }
-
     if (homeGrid) {
         appendNewsToContainer(externalNews, homeGrid, 4);
     }
 }
-
 // Новая функция для отображения внешних новостей на главной
 function renderHomeExternalNews() {
     const homeGrid = document.getElementById('home-external-news-grid');
@@ -541,7 +800,6 @@ function renderHomeExternalNews() {
         appendNewsToContainer(externalNews, homeGrid, 4);
     }
 }
-
 // === ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ИЗВЛЕЧЕНИЯ ПЕРВОГО ИЗОБРАЖЕНИЯ ИЗ HTML ===
 function extractFirstImageFromHtml(htmlString) {
     if (!htmlString) return null;
@@ -550,7 +808,6 @@ function extractFirstImageFromHtml(htmlString) {
     const img = doc.querySelector('img');
     return img ? img.src : null;
 }
-
 // === ЗАГРУЗКА RSS ===
 fetch('https://api.rss2json.com/v1/api.json?rss_url=https://rss.stopgame.ru/rss_all.xml')
     .then(res => {
@@ -564,25 +821,20 @@ fetch('https://api.rss2json.com/v1/api.json?rss_url=https://rss.stopgame.ru/rss_
         if (data.status === 'ok' && data.items && data.items.length > 0) {
             externalNews = data.items.map(item => {
                 let imageUrl = null;
-
                 // 1. Попробуем получить изображение из enclosure (как было)
                 if (item.enclosure && item.enclosure.url) {
                     imageUrl = item.enclosure.url;
                 }
-
                 // 2. Если enclosure не дал результата, ищем в description
                 if (!imageUrl && item.description) {
                     imageUrl = extractFirstImageFromHtml(item.description);
                 }
-
                 // 3. Если и в description не было, ищем в content:encoded (если есть)
                 if (!imageUrl && item['content:encoded']) {
                     imageUrl = extractFirstImageFromHtml(item['content:encoded']);
                 }
-
                 // Если так и не нашли, используем заглушку
                 imageUrl = imageUrl || 'image/icons/Noimage.jpg';
-
                 return {
                     title: item.title || '',
                     link: item.link || '',
@@ -617,22 +869,19 @@ fetch('https://api.rss2json.com/v1/api.json?rss_url=https://rss.stopgame.ru/rss_
             }
         }, 100);
     });
-
 // === НАВИГАЦИЯ И ОТОБРАЖЕНИЕ СЕКЦИЙ ===
-// --- ИЗМЕНЕНО: Добавлена глобальная переменная для отслеживания текущей секции ---
+// - ИЗМЕНЕНО: Добавлена глобальная переменная для отслеживания текущей секции -
 let currentSection = 'home';
-
 function showSection(sectionId) {
     console.log(`Показ секции: ${sectionId}`);
-    // --- ИЗМЕНЕНО: Сохраняем текущую секцию перед переходом ---
+    // - ИЗМЕНЕНО: Сохраняем текущую секцию перед переходом -
     currentSection = sectionId;
-
     document.querySelectorAll('.container').forEach(section => {
         if (section.id !== sectionId) {
             section.classList.remove('visible');
             setTimeout(() => {
                 section.style.display = 'none';
-            }, 500);
+            }, 500); // Должно совпадать с transition-duration в CSS
         }
     });
     const activeSection = document.getElementById(sectionId);
@@ -642,15 +891,26 @@ function showSection(sectionId) {
             activeSection.classList.add('visible');
         }, 0);
         if (sectionId === 'home') {
-            // Убедимся, что статьи загружены
+            // === ОБНОВЛЕНО ДЛЯ НОВОЙ СТРУКТУРЫ ГЛАВНОЙ СТРАНИЦЫ ===
+            console.log("Переход на главную страницу. Загрузка контента...");
+            // Убедимся, что основные данные загружены
             if (articles.length === 0) {
                 const storedArticles = JSON.parse(localStorage.getItem('articles')) || [];
                 articles = storedArticles;
+                console.log(`Загружено ${articles.length} внутренних статей из localStorage.`);
             }
-            loadMainArticle();
-            renderHomeExternalNews();
-            loadRecentArticles();
-            loadMaterialsAndReleases();
+            if (externalNews.length === 0) {
+                // Если внешние новости еще не загружались, попробуем загрузить
+                console.log("Внешние новости не загружены. Попытка загрузки...");
+                // Предполагается, что loadRss вызывается при инициализации.
+                // Если нет, можно добавить вызов loadRss() здесь.
+            }
+            // Загружаем контент специально для главной страницы
+            // Небольшая задержка, чтобы данные (особенно из асинхронного RSS) могли успеть загрузиться
+            setTimeout(() => {
+                loadHomeContent(); // <-- Вызов функции для заполнения новой структуры
+                console.log("Контент главной страницы загружен через loadHomeContent.");
+            }, 150); // 150ms может быть достаточно, можно скорректировать
         } else if (sectionId === 'news') {
             loadArticles('новости');
             filterNews('все'); // Отображаем все новости по умолчанию
@@ -663,11 +923,11 @@ function showSection(sectionId) {
         } else if (sectionId === 'community') {
             loadArticlesForDiscussion();
         }
+        // Добавьте обработку других секций при необходимости
     } else {
         console.error(`Секция с id '${sectionId}' не найдена.`);
     }
 }
-
 function getCurrentCategory() {
     const visibleSection = document.querySelector('.container:not(.hidden):not(.hidden)');
     if (visibleSection) {
@@ -677,40 +937,73 @@ function getCurrentCategory() {
     }
     return 'все';
 }
-
 // === ГЛАВНАЯ СТАТЬЯ ===
+// Глобальная переменная для хранения индекса главной статьи
 let mainArticleIndex = localStorage.getItem('mainArticleIndex') ? parseInt(localStorage.getItem('mainArticleIndex'), 10) : null;
+// === ИСПРАВЛЕНО И УПРОЩЕНО: Функция назначения главной статьи ===
+// Эта функция вызывается ТОЛЬКО из onchange select в админке
+function setMainArticle(indexStr) {
+    const index = parseInt(indexStr, 10);
+    console.log("setMainArticle вызвана с value:", indexStr, "parsed index:", index);
 
-function setMainArticle(index) {
-    if (articles[index]) {
-        mainArticleIndex = index;
-        localStorage.setItem('mainArticleIndex', mainArticleIndex);
-        loadMainArticle();
-        loadArticles(getCurrentCategory());
-        alert(`Статья "${articles[index].title}" назначена главной.`);
+    // 1. Проверка корректности индекса
+    if (isNaN(index) || index < 0 || index >= articles.length) {
+        console.warn("Некорректный индекс статьи для назначения главной:", indexStr);
+        // Сбросим select на "Выберите статью"
+        const selector = document.getElementById('main-article-selector');
+        if (selector) selector.value = "-1";
+        return;
     }
-}
 
+    const selectedArticle = articles[index];
+    if (!selectedArticle) {
+        console.error("Статья не найдена по индексу:", index);
+        const selector = document.getElementById('main-article-selector');
+        if (selector) selector.value = "-1";
+        return;
+    }
+
+    // 2. Установка главной статьи
+    mainArticleIndex = index; // Обновляем глобальную переменную
+    localStorage.setItem('mainArticleIndex', index); // Сохраняем в localStorage
+    console.log(`✅ Главная статья установлена: Индекс ${index}, Заголовок: "${selectedArticle.title}"`);
+
+    // 3. Сброс флага главной RSS статьи
+    if (localStorage.getItem('mainRssArticleLink')) {
+        localStorage.removeItem('mainRssArticleLink');
+        localStorage.removeItem('mainRssArticleTitle');
+        localStorage.removeItem('mainRssArticleThumbnail');
+        console.log("❌ Предыдущая главная RSS-статья сброшена.");
+    }
+
+    // 4. Обновляем отображение главной статьи на главной странице
+    // НЕ вызываем loadMainArticle или loadHomeContent здесь напрямую
+    // Они будут вызваны при переходе на главную или обновлении админки
+
+    // 5. Сообщаем пользователю
+    alert(`Статья "${selectedArticle.title}" назначена главной.`);
+    console.log(`📢 Статья "${selectedArticle.title}" (индекс ${index}) успешно назначена главной.`);
+}
+// Упрощенная функция загрузки главной статьи (для других частей сайта)
 function loadMainArticle() {
     const titleElement = document.querySelector('.main-article-title');
     const imageElement = document.querySelector('.main-article-image');
-    const imageContainer = document.querySelector('.main-article-image-container'); // Получаем контейнер для клика
-    const storedRssLink = localStorage.getItem('mainRssArticleLink');
+    const mainArticleElement = document.querySelector('.main-article');
 
-    // --- ИСПРАВЛЕНИЕ 1: Загрузка статей на главной ---
-    // Убедимся, что статьи загружены при первой загрузке главной страницы
+    // Убедимся, что статьи загружены
     if (articles.length === 0) {
         const storedArticles = JSON.parse(localStorage.getItem('articles')) || [];
         articles = storedArticles;
     }
-    // --- КОНЕЦ ИСПРАВЛЕНИЯ 1 ---
 
-    // --- ИСПРАВЛЕНИЕ 2: Проверяем сначала RSS ---
+    const storedRssLink = localStorage.getItem('mainRssArticleLink');
+    const storedMainIndex = localStorage.getItem('mainArticleIndex');
+
+    // --- Приоритет 1: Главная RSS статья ---
     if (storedRssLink) {
         const rssArticle = externalNews.find(item => item.link === storedRssLink);
-        if (rssArticle && titleElement && imageElement && imageContainer) {
+        if (rssArticle && titleElement && imageElement && mainArticleElement) {
             titleElement.innerText = localStorage.getItem('mainRssArticleTitle') || rssArticle.title;
-            // Используем imageUrl, найденное при обработке RSS
             let mainRssImageUrl = localStorage.getItem('mainRssArticleThumbnail');
             if (!mainRssImageUrl || mainRssImageUrl === 'image/icons/Noimage.jpg') {
                 mainRssImageUrl = rssArticle.imageUrl || 'image/icons/Noimage.jpg';
@@ -718,33 +1011,40 @@ function loadMainArticle() {
             }
             imageElement.src = mainRssImageUrl;
             imageElement.onerror = function () { this.src = 'image/icons/Noimage.jpg'; };
-            // --- ИСПРАВЛЕНИЕ 3: Изменяем обработчик клика для RSS ---
-            // Убираем старый обработчик, если был
-            imageContainer.onclick = null;
-            imageContainer.style.cursor = 'pointer';
-            imageContainer.title = "Кликните, чтобы прочитать";
-            imageContainer.onclick = () => openFullRssArticle(rssArticle); // Открываем на сайте
-            // --- КОНЕЦ ИСПРАВЛЕНИЯ 3 ---
-            return; // Завершаем, если нашли RSS-статью
+            mainArticleElement.onclick = () => openFullRssArticle(rssArticle);
+            return;
         }
     }
 
-    const indexToLoad = mainArticleIndex !== null ? mainArticleIndex : (articles.length > 0 ? 0 : null);
+    // --- Приоритет 2: Главная внутренняя статья ---
+    let indexToLoad = null;
+    if (storedMainIndex !== null) {
+        const parsedIndex = parseInt(storedMainIndex, 10);
+        if (!isNaN(parsedIndex) && parsedIndex >= 0 && parsedIndex < articles.length) {
+            indexToLoad = parsedIndex;
+        }
+    } else if (articles.length > 0) {
+        indexToLoad = 0;
+    }
+
     const article = articles[indexToLoad];
 
-    if (article && titleElement && imageElement) {
+    if (article && titleElement && imageElement && mainArticleElement) {
         titleElement.innerText = article.title;
         imageElement.src = article.shortImage || 'image/icons/Noimage.jpg';
         imageElement.onerror = function () { this.src = 'image/icons/Noimage.jpg'; };
-        // Открытие внутренней статьи
-        imageElement.parentElement.parentElement.onclick = () => openFullArticle(indexToLoad);
+        mainArticleElement.onclick = () => openFullArticle(indexToLoad);
     } else if (titleElement) {
         titleElement.innerText = "Статья не выбрана";
-        if (imageElement) imageElement.src = 'image/icons/Noimage.jpg';
-        if (imageElement) imageElement.parentElement.parentElement.onclick = null;
+        if (imageElement) {
+            imageElement.src = 'image/icons/Noimage.jpg';
+            imageElement.onerror = null;
+        }
+        if (mainArticleElement) {
+            mainArticleElement.onclick = null;
+        }
     }
 }
-
 // === ПОЛНАЯ СТАТЬЯ ===
 function openFullArticle(index) {
     const article = articles[index];
@@ -752,10 +1052,8 @@ function openFullArticle(index) {
         console.error("Статья не найдена по индексу:", index);
         return;
     }
-
     const titleElement = document.getElementById('full-article-title');
     const contentElement = document.getElementById('full-article-content');
-
     if (titleElement && contentElement) {
         titleElement.innerText = article.title;
         contentElement.innerHTML = article.content;
@@ -764,41 +1062,32 @@ function openFullArticle(index) {
         console.error("Элементы для отображения полной статьи не найдены.");
     }
 }
-
 // === ПОЛНАЯ RSS СТАТЬЯ ===
 function openFullRssArticle(rssItem) {
     const titleElement = document.getElementById('full-rss-article-title');
     const metaElement = document.getElementById('full-rss-article-meta');
     const contentElement = document.getElementById('full-rss-article-content');
-
     if (titleElement && metaElement && contentElement) {
         // Устанавливаем заголовок
         titleElement.innerText = rssItem.title || 'Без заголовка';
-
         // Устанавливаем мета-информацию (дата публикации)
         const pubDate = rssItem.pubDate ? new Date(rssItem.pubDate).toLocaleString('ru-RU') : 'Дата не указана';
         metaElement.innerText = `Опубликовано: ${pubDate}`;
         metaElement.style.color = '#aaa';
         metaElement.style.fontSize = '0.9em';
         metaElement.style.marginBottom = '15px';
-
         // Очищаем предыдущий контент
         contentElement.innerHTML = '';
-
         // Определяем контент для отображения
         // Приоритет: content:encoded -> description -> сообщение об отсутствии
         let rawContent = rssItem['content:encoded'] || rssItem.description || '<p>Содержимое недоступно.</p>';
-
         // Очищаем HTML от потенциально опасных элементов
         let safeContent = sanitizeHtml(rawContent);
-
         // Создаем контейнер для контента
         const articleContent = document.createElement('div');
         articleContent.innerHTML = safeContent;
-
         // Добавляем очищенный контент в основной элемент
         contentElement.appendChild(articleContent);
-
         // --- Обновляем или создаем кнопку "Читать оригинал" ---
         let readOriginalButton = document.getElementById('full-rss-article-read-original-button');
         if (!readOriginalButton) {
@@ -809,13 +1098,11 @@ function openFullRssArticle(rssItem) {
             readOriginalButton.style.marginTop = '20px';
             // Стили теперь в CSS
             readOriginalButton.innerText = 'Читать в источнике'; // Надпись изменена
-
             contentElement.appendChild(readOriginalButton);
         }
         // Обновляем ссылку и цель кнопки "Читать оригинал"
         readOriginalButton.href = rssItem.link || '#';
         readOriginalButton.target = '_blank';
-
         // --- Обновляем или создаем кнопку "Назад" внутри контента ---
         let backButton = document.getElementById('full-rss-article-back-button-inner');
         if (!backButton) {
@@ -823,11 +1110,9 @@ function openFullRssArticle(rssItem) {
             backButton.id = 'full-rss-article-back-button-inner';
             backButton.className = 'rss-back-button'; // Новый класс для стилей
             backButton.innerText = '← Назад';
-
             // Вставляем кнопку "Назад" в начало contentElement
             contentElement.insertBefore(backButton, contentElement.firstChild);
         }
-
         // Обновляем обработчик события для кнопки "Назад"
         backButton.onclick = () => {
             // Используем showSection для корректного перехода
@@ -835,11 +1120,8 @@ function openFullRssArticle(rssItem) {
             showSection('news');
             // Альтернатива: history.back(); если нужно строго назад по истории
         };
-
-
         // Показываем секцию полной RSS статьи
         showSection('full-rss-article');
-
     } else {
         console.error("Элементы для отображения полной RSS статьи не найдены.");
         // Резервный вариант: открыть в новой вкладке
@@ -848,13 +1130,11 @@ function openFullRssArticle(rssItem) {
         }
     }
 }
-
 function sanitizeHtml(htmlString) {
     if (!htmlString) return '';
     // Создаем временный элемент
     const temp = document.createElement('div');
     temp.innerHTML = htmlString;
-
     // Удаляем потенциально опасные теги
     const forbiddenTags = ['script', 'object', 'embed', 'iframe', 'form'];
     forbiddenTags.forEach(tagName => {
@@ -864,7 +1144,6 @@ function sanitizeHtml(htmlString) {
             elements[0].parentNode.removeChild(elements[0]);
         }
     });
-
     // Удаляем атрибуты on* (например, onclick, onload)
     const allElements = temp.getElementsByTagName('*');
     for (let i = 0; i < allElements.length; i++) {
@@ -878,10 +1157,8 @@ function sanitizeHtml(htmlString) {
             }
         }
     }
-
     return temp.innerHTML;
 }
-
 // --- Добавим обработчик для кнопки "Назад" внутри секции full-rss-article, если она там есть ---
 document.addEventListener('DOMContentLoaded', function() {
     const innerBackButton = document.getElementById('full-rss-article-back-button-inner');
@@ -893,7 +1170,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
 // === СООБЩЕСТВО (КОММЕНТАРИИ) ===
 function loadArticlesForDiscussion() {
     const articlesList = document.getElementById('articles-list');
@@ -917,7 +1193,6 @@ function loadArticlesForDiscussion() {
         loadFeedbacksForArticle(index);
     });
 }
-
 function showCommentForm(articleIndex) {
     const commentForm = document.getElementById(`comment-form-${articleIndex}`);
     if (!commentForm) return;
@@ -939,7 +1214,6 @@ function showCommentForm(articleIndex) {
         }
     }
 }
-
 function addComment(articleIndex) {
     const quillContainerId = `quill-container-${articleIndex}`;
     const quillContainer = document.querySelector(`#${quillContainerId}`);
@@ -972,7 +1246,6 @@ function addComment(articleIndex) {
         quillInstance.setContents([{ insert: '\n' }]);
     }
 }
-
 function loadFeedbacksForArticle(articleIndex) {
     const feedbackList = document.getElementById(`feedback-list-${articleIndex}`);
     if (!feedbackList) return;
@@ -989,7 +1262,6 @@ function loadFeedbacksForArticle(articleIndex) {
         });
     }
 }
-
 // === АДМИНКА ===
 function editArticle(index) {
     const article = articles[index];
@@ -1000,7 +1272,6 @@ function editArticle(index) {
     currentEditingIndex = index;
     showSection('admin');
 }
-
 function deleteArticle(index) {
     if (confirm("Вы уверены, что хотите удалить эту статью?")) {
         articles.splice(index, 1);
@@ -1017,7 +1288,6 @@ function deleteArticle(index) {
         alert("Статья удалена!");
     }
 }
-
 function addArticle() {
     const title = document.getElementById('article-title').value.trim();
     const shortImageInput = document.getElementById('article-short-image');
@@ -1040,7 +1310,6 @@ function addArticle() {
         saveArticle(title, content, category, shortImage);
     }
 }
-
 function saveArticle(title, content, category, shortImage) {
     const publishDate = new Date().toISOString();
     if (currentEditingIndex !== null && articles[currentEditingIndex]) {
@@ -1054,7 +1323,6 @@ function saveArticle(title, content, category, shortImage) {
     clearArticleForm();
     loadArticles(getCurrentCategory());
 }
-
 function clearArticleForm() {
     document.getElementById('article-title').value = '';
     document.getElementById('article-short-image').value = '';
@@ -1062,18 +1330,15 @@ function clearArticleForm() {
     quill.root.innerHTML = '';
     currentEditingIndex = null;
 }
-
 // === ПРОФИЛЬ ===
 function toggleProfileMenu() {
     const profileMenu = document.getElementById('profile-menu');
     if (profileMenu) profileMenu.classList.toggle('hidden');
 }
-
 function closeProfileMenu() {
     const profileMenu = document.getElementById('profile-menu');
     if (profileMenu) profileMenu.classList.add('hidden');
 }
-
 document.addEventListener('click', function (event) {
     const menu = document.getElementById('profile-menu');
     const avatar = document.getElementById('profile-avatar-header');
@@ -1081,7 +1346,6 @@ document.addEventListener('click', function (event) {
         menu.classList.add('hidden');
     }
 });
-
 function saveProfile() {
     if (!currentUser) {
         alert("Пользователь не авторизован.");
@@ -1109,7 +1373,6 @@ function saveProfile() {
         alert("Изменения успешно сохранены!");
     }
 }
-
 let cropper;
 document.getElementById('avatar-upload').addEventListener('change', (event) => {
     const file = event.target.files[0];
@@ -1142,7 +1405,6 @@ document.getElementById('avatar-upload').addEventListener('change', (event) => {
         reader.readAsDataURL(file);
     }
 });
-
 function cropImage() {
     if (cropper) {
         const canvas = cropper.getCroppedCanvas({ width: 100, height: 100 });
@@ -1154,10 +1416,9 @@ function cropImage() {
         }
     }
 }
-
 function saveAvatar() {
     const croppedImage = document.getElementById('cropped-image');
-    if (croppedImage && croppedImage.src && croppedImage.src.startsWith('data:image')) {
+    if (croppedImage && croppedImage.src && croppedImage.src.startsWith('image')) {
         if (currentUser) {
             currentUser.avatar = croppedImage.src;
             updateProfileDisplay();
@@ -1172,7 +1433,6 @@ function saveAvatar() {
         alert("Сначала обрежьте изображение.");
     }
 }
-
 // === АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ ===
 function updateAuthButtons() {
     const authButton = document.getElementById('auth-button');
@@ -1193,7 +1453,6 @@ function updateAuthButtons() {
         if (adminLink) adminLink.style.display = 'none';
     }
 }
-
 function register() {
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
@@ -1214,7 +1473,6 @@ function register() {
     usernameInput.value = '';
     passwordInput.value = '';
 }
-
 function login() {
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
@@ -1234,7 +1492,6 @@ function login() {
         alert("Неправильный логин или пароль.");
     }
 }
-
 function logout() {
     currentUser = null;
     localStorage.removeItem('currentUser');
@@ -1242,14 +1499,13 @@ function logout() {
     updateAuthButtons();
     showSection('auth');
 }
-
 // === ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ===
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM загружен, инициализация...");
     loadUser();
     showSection('home');
 });
-
 window.addEventListener('load', () => {
     console.log("Страница полностью загружена.");
 });
+

@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Игровой Портал</title>
-
     <!-- Подключение внешних библиотек -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="image\icons\GGlogo.svg" type="image/svg">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
 </head>
@@ -35,37 +35,56 @@
             </div>
         </nav>
     </header>
-
     <div id="home" class="container">
-        <!-- Главная статья -->
+        <!-- Основная статья -->
         <div class="main-article">
-            <div class="main-article-image-container">
-                <img src="image/icons/Noimage.jpg" alt="Основная статья" class="main-article-image" onerror="this.src='image/icons/Noimage.jpg';"/>
-                <h2 class="main-article-title">Основная статья</h2>
+            <img src="image/icons/Noimage.jpg" alt="Основная статья" class="main-article-image" onerror="this.src='image/icons/Noimage.jpg';"/>
+            <div class="main-article-content">
+                <h2 class="main-article-title">Заголовок основной статьи</h2>
+                <p class="main-article-excerpt">Краткое описание статьи...</p>
             </div>
         </div>
 
-        <!-- Недавние статьи -->
-        <div id="recent-articles-slider-content" class="recent-articles-slider-content"></div>
+        <!-- Слайдер статей (перекрывающий основную статью) -->
+        <div class="recent-articles-slider">
+            <h3>Последние материалы</h3>
+            <div class="recent-articles-slider-content" id="recent-articles-slider-content">
+                <!-- Слайды будут добавлены сюда динамически -->
+            </div>
+        </div>
 
-        <!-- Материалы и релизы -->
+        <!-- НОВЫЙ БЛОК: Главные статьи -->
+        <div class="main-articles-section">
+            <h3>⭐ Главные статьи</h3>
+            <div id="home-main-articles-grid" class="articles-grid">
+                <!-- Главные статьи будут добавлены сюда динамически -->
+            </div>
+        </div>
+
+        <!-- Колонки с материалами и релизами -->
         <div class="content-columns">
             <div class="left-column">
-                <h3>Материалы</h3>
-                <div id="materials-content"></div>
+                <h3>🎮 Материалы</h3>
+                <div id="home-external-news-grid" class="articles-grid">
+                    <!-- Внешние новости будут добавлены сюда динамически -->
+                </div>
             </div>
             <div class="right-column">
-                <h3>Главные релизы</h3>
-                <div id="releases-content"></div>
+                <h3>🔥 Главные релизы</h3>
+                <div id="home-releases-grid" class="articles-grid">
+                    <!-- Релизы будут добавлены сюда динамически -->
+                </div>
             </div>
         </div>
 
-        <!-- Внешние новости -->
-        <div class="home-external-news-section">
-            <h3 style="color: gold; margin: 30px 0 15px; text-align: center;">🎮 Игровые новости</h3>
-            <div id="home-external-news-grid" class="articles-grid"></div>
+        <!-- Список всех статей -->
+        <div class="all-articles-section">
+            <h3>Все статьи</h3>
+            <div id="all-articles-list" class="articles-grid">
+                <!-- Статьи будут добавлены сюда динамически -->
+            </div>
         </div>
-    </div>
+    </div> <!-- Закрывающий тег для #home -->
 
     <!-- Секция новостей -->
     <div id="news" class="container hidden">
@@ -93,12 +112,10 @@
         <h2>Обзоры Игр</h2>
         <div id="reviews-content" class="articles-grid"></div>
     </div>
-
     <div id="guides" class="container hidden">
         <h2>Гайды</h2>
         <div id="guides-content" class="articles-grid"></div>
     </div>
-
     <div id="community" class="container hidden">
         <h2>Сообщество</h2>
         <p>Присоединяйтесь к обсуждениям и делитесь своими мнениями о статьях!</p>
@@ -131,13 +148,11 @@
         <p><strong>Электронная почта:</strong> <input type="email" id="profile-email" /></p>
         <p><strong>Дата регистрации:</strong> <span id="profile-registration-date"></span></p>
         <p><strong>Роль:</strong> <span id="profile-role"></span></p>
-
         <div class="form-group">
             <label for="avatar-upload">Аватар:</label>
             <input type="file" id="avatar-upload" accept="image/*" />
             <img id="profile-avatar-preview" src="image/icons/Noimage.jpg" alt="Avatar" style="border-radius: 50%; width: 100px; height: 100px;" />
         </div>
-
         <div id="crop-container" style="display:none;">
             <img id="crop-image" style="max-width: 100%; border-radius: 5px;" alt="Загруженное изображение для обрезки" />
             <div class="crop-buttons">
@@ -175,39 +190,83 @@
                 <div id="editor"></div>
             </div>
             <button type="button" class="btn" onclick="addArticle()">Добавить статью</button>
-
             <div class="form-group">
                 <h4>Назначить главную статью:</h4>
-                <select id="main-article-selector" onchange="setMainArticle()">
-                    <option disabled selected>Выберите статью</option>
+                <!-- ИСПРАВЛЕНО: Передаем значение select -->
+                <select id="main-article-selector" onchange="setMainArticle(this.value)">
+                    <option value="-1" disabled selected>Выберите статью</option>
                 </select>
             </div>
             <div class="admin-message" id="admin-message"></div>
         </form>
-
         <h3>Существующие статьи</h3>
         <div id="existing-articles" class="articles-grid"></div>
     </div>
 
     <!-- ПОЛНАЯ RSS СТАТЬЯ -->
-<div id="full-rss-article" class="container hidden">
-    <div style="position: relative;">
-        <!-- Кнопка "Назад" внутри контента -->
-        <button id="full-rss-article-back-button-inner" class="btn back-button">
-            ← Назад
-        </button>
-        <h1 id="full-rss-article-title" style="color: #FFD700; margin-bottom: 10px; word-wrap: break-word;"></h1>
-        <div id="full-rss-article-meta" style="color: #aaa; font-size: 0.9em; margin-bottom: 15px;"></div>
-        <div id="full-rss-article-content" style="line-height: 1.6; color: #eee;">
-            <!-- Содержимое RSS статьи будет вставлено сюда -->
+    <div id="full-rss-article" class="container hidden">
+        <div style="position: relative;">
+            <!-- Кнопка "Назад" внутри контента -->
+            <button id="full-rss-article-back-button-inner" class="btn back-button">
+                ← Назад
+            </button>
+            <h1 id="full-rss-article-title" style="color: #FFD700; margin-bottom: 10px; word-wrap: break-word;"></h1>
+            <div id="full-rss-article-meta" style="color: #aaa; font-size: 0.9em; margin-bottom: 15px;"></div>
+            <div id="full-rss-article-content" style="line-height: 1.6; color: #eee;">
+                <!-- Содержимое RSS статьи будет вставлено сюда -->
+            </div>
+            <!-- Кнопка "Читать оригинал" будет создана скриптом -->
         </div>
-        <!-- Кнопка "Читать оригинал" будет создана скриптом -->
-        <!-- <a id="full-rss-article-read-original-button" class="btn" style="display:block; margin-top: 20px; background-color: #4CAF50; color: white; padding: 10px 20px; text-align: center; text-decoration: none; border-radius: 5px;" target="_blank">Читать оригинал на источнике</a> -->
     </div>
-</div>
-<footer>
-    
-</footer>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>GameGuild</h3>
+                <p>Ваш надежный портал для всего, что связано с играми. Новости, обзоры, гайды и сообщество.</p>
+                <div class="social-links">
+                    <!-- Замените # на ссылки на ваши соцсети -->
+                    <a href="#" aria-label="ВКонтакте"><i class="fab fa-vk"></i></a>
+                    <a href="#" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Навигация</h4>
+                <ul>
+                    <li><a href="#" onclick="showSection('home'); return false;">Главная</a></li>
+                    <li><a href="#" onclick="showSection('news'); return false;">Новости</a></li>
+                    <li><a href="#" onclick="showSection('reviews'); return false;">Обзоры</a></li>
+                    <li><a href="#" onclick="showSection('guides'); return false;">Гайды</a></li>
+                    <li><a href="#" onclick="showSection('community'); return false;">Сообщество</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Информация</h4>
+                <ul>
+                    <li><a href="#">О нас</a></li>
+                    <li><a href="#">Контакты</a></li>
+                    <li><a href="#">Политика конфиденциальности</a></li>
+                    <li><a href="#">Условия использования</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Подписка</h4>
+                <p>Подпишитесь на нашу рассылку, чтобы получать свежие новости.</p>
+                <form class="footer-subscribe-form">
+                    <input type="email" placeholder="Ваш email" required>
+                    <button type="submit">Подписаться</button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 GameGuild. Все права защищены.</p>
+            <!-- Новый абзац -->
+            <p>Материалы раздела "Игровые новости" взяты с <a href="https://stopgame.ru" class="source-link">StopGame.ru</a></p>
+        </div>
+    </footer>
+
     <!-- Подключение JavaScript библиотек -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
