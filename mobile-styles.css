@@ -1,0 +1,282 @@
+/* === АДАПТИВНОСТЬ ДЛЯ ПЛАНШЕТОВ (до 1024px) === */
+@media (max-width: 1024px) {
+  body {
+    padding-top: 60px; /* Уменьшаем отступ под уменьшенный хедер */
+  }
+  
+  header {
+    padding: 5px 10px;
+    height: 45px;
+  }
+  
+  header h1 {
+    font-size: 1.3em;
+  }
+  
+  .main-nav a, .auth-nav a, .auth-nav button {
+    padding: 4px 8px;
+    font-size: 0.8em;
+  }
+  
+  .profile-avatar {
+    width: 32px;
+    height: 32px;
+  }
+  
+  #news-content {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+  }
+  
+  .news-article-title {
+    font-size: 0.95em;
+  }
+  
+  .main-article-content {
+    padding: 30px 15px 15px 15px;
+  }
+  
+  .main-article-title {
+    font-size: 1.5em;
+    padding: 10px;
+  }
+  
+  .recent-article-block {
+    width: 240px;
+    flex: 0 0 calc(50% - 8px);
+  }
+  
+  .recent-article-image {
+    height: 130px;
+  }
+  
+  .footer-container {
+    padding: 0 10px;
+    gap: 20px;
+  }
+  
+  main, .container, #home {
+    margin-top: 45px;
+  }
+}
+
+/* === ДОПОЛНИТЕЛЬНАЯ АДАПТИВНОСТЬ ДЛЯ ОЧЕНЬ МАЛЕНЬКИХ СМАРТФОНОВ (до 480px) === */
+@media (max-width: 480px) {
+  .recent-article-block {
+    width: 220px;
+  }
+
+  .recent-article-image {
+    height: 120px;
+  }
+
+  .recent-article-details {
+    padding: 12px;
+  }
+
+  .recent-article-title {
+    font-size: 0.9em;
+  }
+
+  .recent-articles-slider h3 {
+    font-size: 1.1em;
+  }
+}
+
+/* === СКРЫТИЕ МОБИЛЬНОГО МЕНЮ НА ДЕСКТОПЕ === */
+/* === И ЯВНОЕ ОПРЕДЕЛЕНИЕ СТИЛЕЙ ДЛЯ ДЕСКТОПНОЙ НАВИГАЦИИ === */
+@media (min-width: 769px) {
+  .menu-toggle {
+    display: none !important;
+  }
+
+  nav#mobile-menu {
+    display: none !important;
+  }
+
+  .main-nav {
+    display: flex !important;
+    flex-direction: row !important;
+  }
+
+  .auth-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    margin-left: 20px !important;
+  }
+
+  .main-nav ul {
+    display: flex !important;
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .main-nav li {
+    margin: 0 5px !important;
+  }
+}
+
+.profile-section {
+    position: relative; /* Убедимся, что контейнер профиля имеет relative позиционирование */
+}
+
+/* === МОБИЛЬНЫЕ СТИЛИ ДЛЯ ПРОФИЛЯ === */
+.mobile-nav-actions {
+  display: none;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Мобильное меню профиля (выдвигается справа) */
+.mobile-profile-menu {
+  position: fixed;
+  top: 0;
+  right: -320px;
+  height: 100%;
+  background-color: #1e1e1e;
+  z-index: 2000;
+  transition: right 0.3s ease;
+  overflow-y: auto;
+  border-left: 1px solid #FFD700;
+  width: 180px; /* Уменьшаем ширину для мобильных */
+  top: calc(100% + 10px);
+}
+
+.mobile-profile-menu.visible {
+  right: 0;
+}
+
+.mobile-profile-menu .profile-menu-content {
+  padding: 20px;
+  padding-top: 40px;
+}
+
+.mobile-profile-menu h3 {
+  color: #FFD700;
+  margin: 15px 0;
+  font-size: 1.2em;
+}
+
+.close-menu {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: #FFD700;
+  cursor: pointer;
+}
+
+/* === МОБИЛЬНОЕ МЕНЮ НАВИГАЦИИ === */
+@media (max-width: 768px) {
+  body {
+    padding-top: 60px;
+  }
+  
+  header {
+    justify-content: space-between;
+    padding: 8px 15px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+  }
+  
+  header h1 {
+    margin-right: auto;
+    font-size: 1.5em;
+  }
+  
+  .desktop-nav {
+    display: none;
+    width: 100%;
+    margin-top: 15px;
+  }
+  
+  .mobile-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  /* Скрываем десктопные элементы */
+  .main-nav a, 
+  .auth-nav {
+    display: none;
+  }
+  
+  .menu-toggle {
+    display: block;
+    background: transparent url('image/icons/icons8-меню (1).svg') no-repeat center center;
+    background-size: contain;
+    width: 28px;
+    height: 28px;
+    border: 2px solid #FFD700;
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    z-index: 1001;
+  }
+
+  .menu-toggle:hover {
+    background-color: rgba(255, 215, 0, 0.1);
+  }
+
+  /* Мобильное меню навигации */
+  nav#mobile-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%; /* Изменено с 80% на 100% для полного покрытия экрана */
+    height: 100%;
+    background-color: #121212; /* Непрозрачный фон */
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 80px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    overflow-y: auto;
+  }
+  
+  nav#mobile-menu.active {
+    transform: translateX(0);
+  }
+  
+  /* Стили для элементов меню */
+  nav#mobile-menu .main-nav,
+  nav#mobile-menu .auth-nav {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 0 20px;
+  }
+  
+  nav#mobile-menu .main-nav a,
+  nav#mobile-menu .auth-nav a,
+  nav#mobile-menu .auth-nav button {
+    display: block;
+    width: 100%;
+    padding: 15px 20px;
+    text-align: left;
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.1em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s;
+  }
+  
+  nav#mobile-menu .main-nav a:hover,
+  nav#mobile-menu .auth-nav a:hover,
+  nav#mobile-menu .auth-nav button:hover {
+    background-color: rgba(255, 215, 0, 0.1);
+    color: #FFD700;
+    padding-left: 25px;
+  }
+}

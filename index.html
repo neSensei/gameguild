@@ -3,243 +3,350 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Игровой Портал</title>
-    <!-- Подключение внешних библиотек -->
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <title>GameGuild</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="image\icons\GGlogo.svg" type="image/svg">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="image/icons/GGlogo.svg" type="image/svg">
+    <!-- Include Quill stylesheet -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
+    <style>
+        @font-face {
+            font-family: 'Disket Mono';
+            src: url('Fonts/Disket-Mono-Regular.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Nothing';
+            src: url('Fonts/nothing-font.ttf') format('truetype');
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1 style="font-family: 'Disket Mono', monospace;">
-            <span class="letter-g">G</span>AME<span class="letter-g">G</span>UILD
-        </h1>
-        <nav>
-            <div class="main-nav">
-                <a onclick="showSection('home')">Главная</a>
-                <a onclick="showSection('news')">Новости</a>
-                <a onclick="showSection('reviews')">Обзоры</a>
-                <a onclick="showSection('guides')">Гайды</a>
-                <a onclick="showSection('community')">Сообщество</a>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="g-letter">G</span>ame<span class="g-letter">G</span>uild
             </div>
-            <div class="auth-nav">
-                <a id="admin-link" style="display: none;" onclick="showSection('admin')">Админка</a>
-                <img id="profile-avatar-header" src="image/icons/Noimage.jpg" alt="Avatar" class="profile-avatar" onclick="toggleProfileMenu()" />
-                <div id="profile-menu" class="profile-menu hidden">
-                    <a href="#" onclick="showSection('profile'); closeProfileMenu()">Профиль</a>
-                    <a href="#" onclick="logout(); closeProfileMenu()">Выйти</a>
-                </div>
-                <button id="auth-button" onclick="showSection('auth')">Регистрация / Авторизация</button>
+            <nav class="nav" id="main-nav">
+                <a href="#home" class="nav-link active">Главная</a>
+                <a href="#news" class="nav-link">Новости</a>
+                <a href="#reviews" class="nav-link">Обзоры</a>
+                <a href="#guides" class="nav-link">Гайды</a>
+                <a href="#community" class="nav-link">Сообщество</a>
+            </nav>
+            <div class="profile-icon">
+                <img src="image/icons/ProfileCircle (1).svg" alt="Профиль">
             </div>
-        </nav>
+        </div>
     </header>
-    <div id="home" class="container">
-        <!-- Основная статья -->
-        <div class="main-article">
-            <img src="image/icons/Noimage.jpg" alt="Основная статья" class="main-article-image" onerror="this.src='image/icons/Noimage.jpg';"/>
-            <div class="main-article-content">
-                <h2 class="main-article-title">Заголовок основной статьи</h2>
-                <p class="main-article-excerpt">Краткое описание статьи...</p>
+    <div class="articles-background">
+        <!-- Главная -->
+        <section id="home" class="main-section active-section">
+            <div class="back-container">
+                <a href="#" class="back-button hidden">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
             </div>
-        </div>
-
-        <!-- Слайдер статей (перекрывающий основную статью) -->
-        <div class="recent-articles-slider">
-            <h3>Последние материалы</h3>
-            <div class="recent-articles-slider-content" id="recent-articles-slider-content">
-                <!-- Слайды будут добавлены сюда динамически -->
-            </div>
-        </div>
-
-        <!-- НОВЫЙ БЛОК: Главные статьи -->
-        <div class="main-articles-section">
-            <h3>⭐ Главные статьи</h3>
-            <div id="home-main-articles-grid" class="articles-grid">
-                <!-- Главные статьи будут добавлены сюда динамически -->
-            </div>
-        </div>
-
-        <!-- Колонки с материалами и релизами -->
-        <div class="content-columns">
-            <div class="left-column">
-                <h3>🎮 Материалы</h3>
-                <div id="home-external-news-grid" class="articles-grid">
-                    <!-- Внешние новости будут добавлены сюда динамически -->
+            <div class="article-content-container hidden" id="home-article-content">
+                <h1 id="home-article-title"></h1>
+                <div id="home-article-image-container"></div>
+                <div id="home-article-content-body"></div>
+                <div class="source-link-container">
+                    <a id="home-source-link" href="#" target="_blank" class="source-button">Читать в источнике</a>
                 </div>
             </div>
-            <div class="right-column">
-                <h3>🔥 Главные релизы</h3>
-                <div id="home-releases-grid" class="articles-grid">
-                    <!-- Релизы будут добавлены сюда динамически -->
+            <div class="home-content-container">
+                <div class="hero-container" id="main-article-container">
+                    <div class="loading">Загрузка главной статьи...</div>
+                </div>
+                <div class="recent-news">
+                    <h3>НЕДАВНИЕ СТАТЬИ</h3>
+                    <div class="news-slider" id="recent-news-slider">
+                        <div class="loading">Загрузка свайпера...</div>
+                    </div>
+                </div>
+                <div class="all-articles">
+                    <h2>ВСЕ СТАТЬИ</h2>
+                    <div class="news-list" id="all-articles-container">
+                        <div class="loading">Загрузка всех статей...</div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Список всех статей -->
-        <div class="all-articles-section">
-            <h3>Все статьи</h3>
-            <div id="all-articles-list" class="articles-grid">
-                <!-- Статьи будут добавлены сюда динамически -->
+        </section>
+        <!-- Остальные секции -->
+        <section id="news" class="section">
+            <div class="back-container">
+                <a href="#" class="back-button hidden">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
             </div>
-        </div>
-    </div> <!-- Закрывающий тег для #home -->
-
-    <!-- Секция новостей -->
-    <div id="news" class="container hidden">
-        <div class="news-section">
-            <h2>Игровые новости</h2>
-            <div class="news-filters">
-                <button class="filter-button active" onclick="filterNews('все')">Все</button>
-                <button class="filter-button" onclick="filterNews('pc')">PC</button>
-                <button class="filter-button" onclick="filterNews('xbox')">Xbox Series X/S</button>
-                <button class="filter-button" onclick="filterNews('ps')">PlayStation 5</button>
-                <button class="filter-button" onclick="filterNews('switch')">Nintendo Switch</button>
-                <button class="filter-button" onclick="filterNews('vr')">VR</button>
-                <!-- Добавьте другие фильтры по необходимости -->
+            <div class="article-content-container hidden" id="news-article-content">
+                <h1 id="news-article-title"></h1>
+                <div id="news-article-image-container"></div>
+                <div id="news-article-content-body"></div>
+                <div class="source-link-container">
+                    <a id="news-source-link" href="#" target="_blank" class="source-button">Читать в источнике</a>
+                </div>
             </div>
-            <div id="news-content" class="news-list"></div> <!-- Сюда будут добавляться статьи -->
-        </div>
-        <div class="discussion-section">
-            <h2>Все обсуждают</h2>
-            <div id="discussion-content"></div>
+            <div class="news-list-container">
+                <h2>Последние новости</h2>
+                <div class="news-list" id="news-container">
+                    <div class="loading">Загрузка новостей...</div>
+                </div>
+            </div>
+        </section>
+        <section id="reviews" class="section">
+            <div class="back-container">
+                <a href="#" class="back-button hidden">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
+            </div>
+            <div class="article-content-container hidden" id="reviews-article-content">
+                <h1 id="reviews-article-title"></h1>
+                <div id="reviews-article-image-container"></div>
+                <div id="reviews-article-content-body"></div>
+                <div class="source-link-container">
+                    <a id="reviews-source-link" href="#" target="_blank" class="source-button">Читать в источнике</a>
+                </div>
+            </div>
+            <div class="news-list-container">
+                <h2>Обзоры игр</h2>
+                <div class="news-list" id="reviews-container">
+                    <div class="loading">Загрузка обзоров...</div>
+                </div>
+            </div>
+        </section>
+        <section id="guides" class="section">
+            <div class="back-container">
+                <a href="#" class="back-button hidden">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
+            </div>
+            <div class="article-content-container hidden" id="guides-article-content">
+                <h1 id="guides-article-title"></h1>
+                <div id="guides-article-image-container"></div>
+                <div id="guides-article-content-body"></div>
+                <div class="source-link-container">
+                    <a id="guides-source-link" href="#" target="_blank" class="source-button">Читать в источнике</a>
+                </div>
+            </div>
+            <div class="news-list-container">
+                <h2>Гайды и руководства</h2>
+                <div class="news-list" id="guides-container">
+                    <div class="loading">Загрузка гайдов...</div>
+                </div>
+            </div>
+        </section>
+        <section id="community" class="section">
+            <div class="back-container">
+                <a href="#" class="back-button hidden">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
+            </div>
+            <div class="article-content-container hidden" id="community-article-content">
+                <h1 id="community-article-title"></h1>
+                <div id="community-article-image-container"></div>
+                <div id="community-article-content-body"></div>
+                <div class="source-link-container">
+                    <a id="community-source-link" href="#" target="_blank" class="source-button">Читать в источнике</a>
+                </div>
+            </div>
+            <div class="news-list-container">
+                <h2>Сообщество игроков</h2>
+                <div class="news-list" id="community-container">
+                    <div class="loading">Загрузка сообщества...</div>
+                </div>
+            </div>
+        </section>
+        <!-- Профиль -->
+        <section id="profile" class="section">
+            <div class="back-container">
+                <a href="#" class="back-button hidden">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
+            </div>
+            <div class="profile-container">
+                <h2>Ваш профиль</h2>
+                <div class="profile-content">
+                    <div class="profile-left">
+                        <div class="avatar-section">
+                            <div class="avatar-preview">
+                                <div class="avatar-wrapper">
+                                  <img src="image/icons/Noimage.jpg" alt="Аватар" class="user-avatar">
+                                </div>
+                            </div>
+                            <button type="button" class="change-avatar-btn">Изменить аватар</button>
+                            <input type="file" id="avatar-upload" accept="image/*" class="hidden">
+                        </div>
+                    </div>
+                    <div class="profile-right">
+                        <div class="form-group">
+                            <label for="profile-username">Имя пользователя</label>
+                            <input type="text" id="profile-username" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for="profile-bio">Коротко о себе</label>
+                            <textarea id="profile-bio" placeholder="Расскажите немного о себе..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="profile-birthdate">Дата рождения</label>
+                            <input type="date" id="profile-birthdate">
+                        </div>
+                        <div class="form-group">
+                            <label for="profile-gender">Пол</label>
+                            <select id="profile-gender">
+                                <option value="">Не указан</option>
+                                <option value="male">Мужской</option>
+                                <option value="female">Женский</option>
+                                <option value="other">Другой</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="password-section">
+                    <h3>Изменить пароль</h3>
+                    <div class="form-group">
+                        <label for="current-password">Текущий пароль</label>
+                        <input type="password" id="current-password" placeholder="Введите текущий пароль">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-password">Новый пароль</label>
+                        <input type="password" id="new-password" placeholder="Введите новый пароль">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-password">Подтвердите новый пароль</label>
+                        <input type="password" id="confirm-password" placeholder="Подтвердите новый пароль">
+                    </div>
+                    <button type="button" class="btn-save-password">Сохранить пароль</button>
+                </div>
+                <div class="profile-buttons">
+                    <button type="button" class="btn-cancel">Отмена</button>
+                    <button type="button" class="btn-save-profile">Сохранить профиль</button>
+                </div>
+            </div>
+        </section>
+        <!-- Админка -->
+        <section id="admin" class="section">
+            <div class="back-container">
+                <a href="#" class="back-button hidden">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
+            </div>
+            <div class="admin-container">
+                <h2>Панель администратора</h2>
+                <!-- Форма добавления статьи -->
+                <div class="admin-section">
+                    <h3>Добавить новую статью</h3>
+                    <div class="form-group">
+                        <label for="article-title">Заголовок статьи</label>
+                        <input type="text" id="article-title" class="form-control" placeholder="Введите заголовок статьи">
+                    </div>
+                    <div class="form-group">
+                        <label for="article-category">Категория статьи</label>
+                        <select id="article-category" class="form-control">
+                            <option value="news">Новости</option>
+                            <option value="reviews">Обзоры</option>
+                            <option value="guides">Гайды</option>
+                            <option value="community">Сообщество</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="article-image">Изображение для статьи (обложка)</label>
+                        <input type="file" id="article-image" accept="image/*" class="form-control-file">
+                        <div id="image-preview" class="image-preview"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Текст статьи</label>
+                        <div id="editor" style="min-height: 300px;"></div>
+                    </div>
+                    <button type="button" id="save-article-btn" class="btn-save">Добавить статью</button>
+                </div>
+                <!-- Секция для выбора главной статьи -->
+                <div class="admin-section">
+                    <h3>Назначить главную статью</h3>
+                    <div id="main-article-selector" class="article-selector">
+                        <div class="loading">Загрузка статей...</div>
+                    </div>
+                </div>
+                <!-- Секция для управления статьями -->
+                <div class="admin-section">
+                    <h3>Управление статьями</h3>
+                    <div id="articles-management" class="article-selector">
+                        <div class="loading">Загрузка статей...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- Модальные окна -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Вход в систему</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login">Имя пользователя</label>
+                    <input type="text" id="login" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Войти</button>
+                <p class="register-link">Нет аккаунта? <a href="#" id="show-register">Зарегистрироваться</a></p>
+            </form>
         </div>
     </div>
-
-    <!-- Остальные секции -->
-    <div id="reviews" class="container hidden">
-        <h2>Обзоры Игр</h2>
-        <div id="reviews-content" class="articles-grid"></div>
-    </div>
-    <div id="guides" class="container hidden">
-        <h2>Гайды</h2>
-        <div id="guides-content" class="articles-grid"></div>
-    </div>
-    <div id="community" class="container hidden">
-        <h2>Сообщество</h2>
-        <p>Присоединяйтесь к обсуждениям и делитесь своими мнениями о статьях!</p>
-        <div id="forum-section">
-            <h3>Обсуждение статей</h3>
-            <div id="articles-list"></div>
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Регистрация</h2>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="register-username">Имя пользователя</label>
+                    <input type="text" id="register-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Пароль</label>
+                    <input type="password" id="register-password" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm-password">Подтвердите пароль</label>
+                    <input type="password" id="register-confirm-password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+                <p class="login-link">Уже есть аккаунт? <a href="#" id="show-login">Войти</a></p>
+            </form>
         </div>
     </div>
-
-    <!-- Регистрация / Авторизация -->
-    <div id="auth" class="container hidden">
-        <h2>Регистрация / Авторизация</h2>
-        <div id="auth-form">
-            <div class="form-group">
-                <input type="text" id="username" placeholder="Имя пользователя" />
-            </div>
-            <div class="form-group">
-                <input type="password" id="password" placeholder="Пароль" />
-            </div>
-            <button class="btn" onclick="register()">Зарегистрироваться</button>
-            <button class="btn" onclick="login()">Войти</button>
-            <p id="auth-message" class="admin-message"></p>
-        </div>
-    </div>
-
-    <!-- Профиль пользователя -->
-    <div id="profile" class="container hidden">
-        <h2>Профиль пользователя</h2>
-        <p><strong>Имя пользователя:</strong> <span id="profile-username"></span></p>
-        <p><strong>Электронная почта:</strong> <input type="email" id="profile-email" /></p>
-        <p><strong>Дата регистрации:</strong> <span id="profile-registration-date"></span></p>
-        <p><strong>Роль:</strong> <span id="profile-role"></span></p>
-        <div class="form-group">
-            <label for="avatar-upload">Аватар:</label>
-            <input type="file" id="avatar-upload" accept="image/*" />
-            <img id="profile-avatar-preview" src="image/icons/Noimage.jpg" alt="Avatar" style="border-radius: 50%; width: 100px; height: 100px;" />
-        </div>
-        <div id="crop-container" style="display:none;">
-            <img id="crop-image" style="max-width: 100%; border-radius: 5px;" alt="Загруженное изображение для обрезки" />
-            <div class="crop-buttons">
-                <button id="crop-button" onclick="cropImage()">Обрезать</button>
-                <button id="save-avatar-button" onclick="saveAvatar()">Сохранить аватар</button>
-            </div>
-            <img id="cropped-image" alt="Результат обрезки" style="border-radius: 50%; display: none; width: 100px; height: 100px; object-fit: cover;" />
-        </div>
-        <button onclick="saveProfile()">Сохранить изменения</button>
-    </div>
-
-    <!-- Админка -->
-    <div id="admin" class="container hidden">
-        <h2>Админка</h2>
-        <form onsubmit="return false;" class="admin-form">
-            <div class="form-group">
-                <input type="text" id="article-title" placeholder="Заголовок статьи" required />
-            </div>
-            <div class="form-group">
-                <label class="file-upload">
-                    <input type="file" id="article-short-image" accept="image/*" />
-                    <span class="file-button">Выберите изображение</span>
-                </label>
-            </div>
-            <div class="form-group">
-                <select id="article-category" required>
-                    <option value="" disabled selected>Выберите категорию статьи</option>
-                    <option value="новости">Новости</option>
-                    <option value="обзоры">Обзоры</option>
-                    <option value="гайды">Гайды</option>
-                </select>
-            </div>
-            <div id="editor-container">
-                <label for="editor">Содержимое статьи:</label>
-                <div id="editor"></div>
-            </div>
-            <button type="button" class="btn" onclick="addArticle()">Добавить статью</button>
-            <div class="form-group">
-                <h4>Назначить главную статью:</h4>
-                <!-- ИСПРАВЛЕНО: Передаем значение select -->
-                <select id="main-article-selector" onchange="setMainArticle(this.value)">
-                    <option value="-1" disabled selected>Выберите статью</option>
-                </select>
-            </div>
-            <div class="admin-message" id="admin-message"></div>
-        </form>
-        <h3>Существующие статьи</h3>
-        <div id="existing-articles" class="articles-grid"></div>
-    </div>
-
-    <!-- ПОЛНАЯ RSS СТАТЬЯ -->
-    <div id="full-rss-article" class="container hidden">
-        <div style="position: relative;">
-            <!-- Кнопка "Назад" внутри контента -->
-            <button id="full-rss-article-back-button-inner" class="btn back-button">
-                ← Назад
-            </button>
-            <h1 id="full-rss-article-title" style="color: #FFD700; margin-bottom: 10px; word-wrap: break-word;"></h1>
-            <div id="full-rss-article-meta" style="color: #aaa; font-size: 0.9em; margin-bottom: 15px;"></div>
-            <div id="full-rss-article-content" style="line-height: 1.6; color: #eee;">
-                <!-- Содержимое RSS статьи будет вставлено сюда -->
-            </div>
-            <!-- Кнопка "Читать оригинал" будет создана скриптом -->
-        </div>
-    </div>
-
     <footer>
         <div class="footer-container">
             <div class="footer-section">
                 <h3>GameGuild</h3>
                 <p>Ваш надежный портал для всего, что связано с играми. Новости, обзоры, гайды и сообщество.</p>
                 <div class="social-links">
-                    <!-- Замените # на ссылки на ваши соцсети -->
-                    <a href="#" aria-label="ВКонтакте"><i class="fab fa-vk"></i></a>
-                    <a href="#" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
-                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                    <a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                    <a href="https://t.me/ne_sensei" aria-label="Telegram">
+                        <img class="footer-icon" src="image/icons/icons8-телеграм.svg" alt="Telegram">
+                    </a>
+                    <a href="https://vk.com/ne_sensei" aria-label="ВКонтакте">
+                        <img class="footer-icon" src="image/icons/icons8-vk.svg" alt="VK">
+                    </a>
+                    <a href="https://github.com/neSensei" aria-label="GitHub">
+                        <img class="footer-icon" src="image/icons/github-mark.svg" alt="GitHub">
+                    </a>
                 </div>
             </div>
             <div class="footer-section">
                 <h4>Навигация</h4>
                 <ul>
-                    <li><a href="#" onclick="showSection('home'); return false;">Главная</a></li>
-                    <li><a href="#" onclick="showSection('news'); return false;">Новости</a></li>
-                    <li><a href="#" onclick="showSection('reviews'); return false;">Обзоры</a></li>
-                    <li><a href="#" onclick="showSection('guides'); return false;">Гайды</a></li>
-                    <li><a href="#" onclick="showSection('community'); return false;">Сообщество</a></li>
+                    <li><a href="#home" class="footer-nav-link">Главная</a></li>
+                    <li><a href="#news" class="footer-nav-link">Новости</a></li>
+                    <li><a href="#reviews" class="footer-nav-link">Обзоры</a></li>
+                    <li><a href="#guides" class="footer-nav-link">Гайды</a></li>
+                    <li><a href="#community" class="footer-nav-link">Сообщество</a></li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -261,15 +368,12 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2024 GameGuild. Все права защищены.</p>
-            <!-- Новый абзац -->
-            <p>Материалы раздела "Игровые новости" взяты с <a href="https://stopgame.ru" class="source-link">StopGame.ru</a></p>
+            <p>&copy; 2025 GameGuild. Все права защищены.</p>
+            <p>Материалы для статей взяты с <a href="https://stopgame.ru" class="source-link">StopGame.ru</a></p>
         </div>
     </footer>
-
-    <!-- Подключение JavaScript библиотек -->
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <script src="script.js"></script> <!-- Подключение JavaScript -->
+    <!-- Include the Quill library -->
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
