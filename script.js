@@ -346,6 +346,12 @@ function setupPageNavigation() {
             closeAllFullArticles();
             window.history.pushState(null, null, `#${sectionId}`);
             window.showSection(sectionId);
+            
+            // Закрываем мобильное меню после выбора пункта
+            const navContainer = document.querySelector('.nav-container');
+            if (navContainer) {
+                navContainer.classList.remove('active');
+            }
         });
     });
     window.addEventListener('hashchange', () => {
@@ -1086,16 +1092,31 @@ function setupAuth() {
         updateProfileUI();
     }
 }
+
+// Функция для инициализации мобильного меню
+function setupMobileMenu() {
+    const hamburger = document.querySelector('.hamburger');
+    const navContainer = document.querySelector('.nav-container');
+    
+    if (hamburger && navContainer) {
+        hamburger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            navContainer.classList.toggle('active');
+        });
+        
+        // Закрываем меню при клике вне его
+        document.addEventListener('click', function(e) {
+            if (!navContainer.contains(e.target) && !hamburger.contains(e.target)) {
+                navContainer.classList.remove('active');
+            }
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     setupPageNavigation();
     setupBackButton();
     setupAuth();
     loadRSSData();
-    const hamburger = document.querySelector('.hamburger');
-    const navLinks = document.querySelector('.nav-links');
-    if (hamburger && navLinks) {
-        hamburger.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-        });
-    }
+    setupMobileMenu();
 });
